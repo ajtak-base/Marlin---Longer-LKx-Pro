@@ -112,16 +112,16 @@ fil_change_settings_t fc_settings[EXTRUDERS];
 
     const millis_t ms = millis();
     if (ELAPSED(ms, next_buzz)) {
-        if (always || runout_beep < max_beep_count + 5) { // Only beep as long as we're supposed to
-            next_buzz = ms + ((always || runout_beep < max_beep_count) ? 1000 : 500);
-            BUZZ(50, 880 - (runout_beep & 1) * 220);
-            runout_beep++;
-        }
+      if (always || runout_beep < max_beep_count + 5) { // Only beep as long as we're supposed to
+          next_buzz = ms + ((always || runout_beep < max_beep_count) ? 1000 : 500);
+          BUZZ(50, 880 - (runout_beep & 1) * 220);
+          runout_beep++;
+      }
     }
 }
   inline void first_impatient_beep(const int8_t max_beep_count) { impatient_beep(max_beep_count, true); }
 #else
-  inline void impatient_beep(const int8_t, const bool=false){}
+  inline void impatient_beep(const int8_t, const bool=false) {}
   inline void first_impatient_beep(const int8_t) {}
 #endif
 
@@ -134,15 +134,14 @@ fil_change_settings_t fc_settings[EXTRUDERS];
  *
  * Returns 'true' if heating was completed, 'false' for abort
  */
-static bool ensure_safe_temperature(const bool wait = true, const PauseMode mode = PAUSE_MODE_SAME)
-{
+static bool ensure_safe_temperature(const bool wait=true, const PauseMode mode=PAUSE_MODE_SAME) {
     DEBUG_SECTION(est, "ensure_safe_temperature", true);
     DEBUG_ECHOLNPGM("... wait:", wait, " mode:", mode);
 
-#if ENABLED(PREVENT_COLD_EXTRUSION)
+  #if ENABLED(PREVENT_COLD_EXTRUSION)
     if (!DEBUGGING(DRYRUN) && thermalManager.targetTooColdToExtrude(active_extruder))
         thermalManager.setTargetHotend(thermalManager.extrude_min_temp, active_extruder);
-#endif
+  #endif
     ui.pause_show_message(PAUSE_MESSAGE_HEATING, mode);
     TERN_(EXTENSIBLE_UI, ExtUI::onPauseMessage(PAUSE_MESSAGE_HEATING, mode));
 
