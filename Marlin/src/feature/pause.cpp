@@ -82,8 +82,8 @@
 static xyze_pos_t resume_position;
 
 #if M600_PURGE_MORE_RESUMABLE
-PauseMenuResponse pause_menu_response;
-PauseMode pause_mode = PAUSE_MODE_PAUSE_PRINT;
+  PauseMenuResponse pause_menu_response;
+  PauseMode pause_mode = PAUSE_MODE_PAUSE_PRINT;
 #endif
 
 fil_change_settings_t fc_settings[EXTRUDERS];
@@ -99,36 +99,30 @@ fil_change_settings_t fc_settings[EXTRUDERS];
 #endif
 
 #if HAS_BUZZER
-static void impatient_beep(const int8_t max_beep_count, const bool restart = false)
-{
+  static void impatient_beep(const int8_t max_beep_count, const bool restart=false) {
 
     if (TERN0(HAS_MARLINUI_MENU, pause_mode == PAUSE_MODE_PAUSE_PRINT)) return;
 
     static millis_t next_buzz = 0;
     static int8_t runout_beep = 0;
 
-    if (restart)
-        next_buzz = runout_beep = 0;
+    if (restart) next_buzz = runout_beep = 0;
 
     const bool always = max_beep_count < 0;
 
     const millis_t ms = millis();
-    if (ELAPSED(ms, next_buzz))
-    {
-        if (always || runout_beep < max_beep_count + 5)
-        { // Only beep as long as we're supposed to
+    if (ELAPSED(ms, next_buzz)) {
+        if (always || runout_beep < max_beep_count + 5) { // Only beep as long as we're supposed to
             next_buzz = ms + ((always || runout_beep < max_beep_count) ? 1000 : 500);
             BUZZ(50, 880 - (runout_beep & 1) * 220);
             runout_beep++;
         }
     }
 }
-inline void first_impatient_beep(const int8_t max_beep_count) { impatient_beep(max_beep_count, true); }
+  inline void first_impatient_beep(const int8_t max_beep_count) { impatient_beep(max_beep_count, true); }
 #else
-inline void impatient_beep(const int8_t, const bool = false)
-{
-}
-inline void first_impatient_beep(const int8_t) {}
+  inline void impatient_beep(const int8_t, const bool=false){}
+  inline void first_impatient_beep(const int8_t) {}
 #endif
 
 /**
