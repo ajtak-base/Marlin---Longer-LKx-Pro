@@ -150,11 +150,11 @@ static bool ensure_safe_temperature(const bool wait=true, const PauseMode mode=P
     if (wait)
         return thermalManager.wait_for_hotend(active_extruder);
 
-    // Allow interruption by Emergency Parser M108
-    wait_for_heatup = TERN1(PREVENT_COLD_EXTRUSION, !thermalManager.allow_cold_extrude);
-    while (wait_for_heatup && ABS(thermalManager.wholeDegHotend(active_extruder) - thermalManager.degTargetHotend(active_extruder)) > (TEMP_WINDOW))
-        idle();
-    wait_for_heatup = false;
+  // Allow interruption by Emergency Parser M108
+  wait_for_heatup = TERN1(PREVENT_COLD_EXTRUSION, !thermalManager.allow_cold_extrude);
+  while (wait_for_heatup && ABS(thermalManager.wholeDegHotend(active_extruder) - thermalManager.degTargetHotend(active_extruder)) > (TEMP_WINDOW))
+    idle();
+  wait_for_heatup = false;
 
   #if ENABLED(PREVENT_COLD_EXTRUSION)
     // A user can cancel wait-for-heating with M108
