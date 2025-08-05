@@ -44,15 +44,15 @@
 #endif
 
 #if ENABLED(FWRETRACT)
-  #include "fwretract.h"
+#include "fwretract.h"
 #endif
 
 #if HAS_FILAMENT_SENSOR
-  #include "runout.h"
+#include "runout.h"
 #endif
 
 #if ENABLED(HOST_ACTION_COMMANDS)
-  #include "host_actions.h"
+#include "host_actions.h"
 #endif
 
 #if ENABLED(EXTENSIBLE_UI)
@@ -64,11 +64,11 @@
 #include "../lcd/marlinui.h"
 
 #if HAS_BUZZER
-  #include "../libs/buzzer.h"
+#include "../libs/buzzer.h"
 #endif
 
 #if ENABLED(POWER_LOSS_RECOVERY)
-  #include "powerloss.h"
+#include "powerloss.h"
 #endif
 
 #include "../libs/nozzle.h"
@@ -82,47 +82,53 @@
 static xyze_pos_t resume_position;
 
 #if M600_PURGE_MORE_RESUMABLE
-  PauseMenuResponse pause_menu_response;
-  PauseMode pause_mode = PAUSE_MODE_PAUSE_PRINT;
+PauseMenuResponse pause_menu_response;
+PauseMode pause_mode = PAUSE_MODE_PAUSE_PRINT;
 #endif
 
 fil_change_settings_t fc_settings[EXTRUDERS];
 
 #if ENABLED(SDSUPPORT)
-  #include "../sd/cardreader.h"
+#include "../sd/cardreader.h"
 #endif
 
 #if ENABLED(EMERGENCY_PARSER)
-  #define _PMSG(L) L##_M108
+#define _PMSG(L) L##_M108
 #else
-  #define _PMSG(L) L##_LCD
+#define _PMSG(L) L##_LCD
 #endif
 
 #if HAS_BUZZER
-  static void impatient_beep(const int8_t max_beep_count, const bool restart=false) {
+static void impatient_beep(const int8_t max_beep_count, const bool restart = false)
+{
 
     if (TERN0(HAS_MARLINUI_MENU, pause_mode == PAUSE_MODE_PAUSE_PRINT)) return;
 
     static millis_t next_buzz = 0;
     static int8_t runout_beep = 0;
 
-    if (restart) next_buzz = runout_beep = 0;
+    if (restart)
+        next_buzz = runout_beep = 0;
 
     const bool always = max_beep_count < 0;
 
     const millis_t ms = millis();
-    if (ELAPSED(ms, next_buzz)) {
-      if (always || runout_beep < max_beep_count + 5) { // Only beep as long as we're supposed to
-        next_buzz = ms + ((always || runout_beep < max_beep_count) ? 1000 : 500);
-        BUZZ(50, 880 - (runout_beep & 1) * 220);
-        runout_beep++;
-      }
+    if (ELAPSED(ms, next_buzz))
+    {
+        if (always || runout_beep < max_beep_count + 5)
+        { // Only beep as long as we're supposed to
+            next_buzz = ms + ((always || runout_beep < max_beep_count) ? 1000 : 500);
+            BUZZ(50, 880 - (runout_beep & 1) * 220);
+            runout_beep++;
+        }
     }
-  }
-  inline void first_impatient_beep(const int8_t max_beep_count) { impatient_beep(max_beep_count, true); }
+}
+inline void first_impatient_beep(const int8_t max_beep_count) { impatient_beep(max_beep_count, true); }
 #else
-  inline void impatient_beep(const int8_t, const bool=false) {}
-  inline void first_impatient_beep(const int8_t) {}
+inline void impatient_beep(const int8_t, const bool = false)
+{
+}
+inline void first_impatient_beep(const int8_t) {}
 #endif
 
 /**
@@ -134,14 +140,15 @@ fil_change_settings_t fc_settings[EXTRUDERS];
  *
  * Returns 'true' if heating was completed, 'false' for abort
  */
-static bool ensure_safe_temperature(const bool wait=true, const PauseMode mode=PAUSE_MODE_SAME) {
-  DEBUG_SECTION(est, "ensure_safe_temperature", true);
-  DEBUG_ECHOLNPGM("... wait:", wait, " mode:", mode);
+static bool ensure_safe_temperature(const bool wait = true, const PauseMode mode = PAUSE_MODE_SAME)
+{
+    DEBUG_SECTION(est, "ensure_safe_temperature", true);
+    DEBUG_ECHOLNPGM("... wait:", wait, " mode:", mode);
 
-  #if ENABLED(PREVENT_COLD_EXTRUSION)
+#if ENABLED(PREVENT_COLD_EXTRUSION)
     if (!DEBUGGING(DRYRUN) && thermalManager.targetTooColdToExtrude(active_extruder))
-      thermalManager.setTargetHotend(thermalManager.extrude_min_temp, active_extruder);
-  #endif
+        thermalManager.setTargetHotend(thermalManager.extrude_min_temp, active_extruder);
+#endif
     ui.pause_show_message(PAUSE_MESSAGE_HEATING, mode);
     TERN_(EXTENSIBLE_UI, ExtUI::onPauseMessage(PAUSE_MESSAGE_HEATING, mode));
 
@@ -150,22 +157,22 @@ static bool ensure_safe_temperature(const bool wait=true, const PauseMode mode=P
     if (wait)
         return thermalManager.wait_for_hotend(active_extruder);
 
-  // Allow interruption by Emergency Parser M108
-  wait_for_heatup = TERN1(PREVENT_COLD_EXTRUSION, !thermalManager.allow_cold_extrude);
-  while (wait_for_heatup && ABS(thermalManager.wholeDegHotend(active_extruder) - thermalManager.degTargetHotend(active_extruder)) > (TEMP_WINDOW))
-    idle();
-  wait_for_heatup = false;
+    // Allow interruption by Emergency Parser M108
+    wait_for_heatup = TERN1(PREVENT_COLD_EXTRUSION, !thermalManager.allow_cold_extrude);
+    while (wait_for_heatup && ABS(thermalManager.wholeDegHotend(active_extruder) - thermalManager.degTargetHotend(active_extruder)) > (TEMP_WINDOW))
+        idle();
+    wait_for_heatup = false;
 
-  #if ENABLED(PREVENT_COLD_EXTRUSION)
+#if ENABLED(PREVENT_COLD_EXTRUSION)
     // A user can cancel wait-for-heating with M108
     if (!DEBUGGING(DRYRUN) && thermalManager.targetTooColdToExtrude(active_extruder))
     {
         SERIAL_ECHO_MSG(STR_ERR_HOTEND_TOO_COLD);
         return false;
     }
-  #endif
+#endif
 
-  return true;
+    return true;
 }
 
 /**
