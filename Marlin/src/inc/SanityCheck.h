@@ -4124,19 +4124,17 @@ static_assert(_PLUS_TEST(4), "HOMING_FEEDRATE_MM_M values must be positive.");
     #error "DGUS_LCD_UI_RELOADED requires a heated bed."
   #elif FAN_COUNT < 1
     #error "DGUS_LCD_UI_RELOADED requires a fan."
-  #elif !HAS_BED_PROBE
-    #error "DGUS_LCD_UI_RELOADED requires a bed probe."
-  #elif !HAS_MESH
-    #error "DGUS_LCD_UI_RELOADED requires mesh leveling."
   #elif DISABLED(LCD_BED_TRAMMING)
     #error "DGUS_LCD_UI_RELOADED requires LCD_BED_TRAMMING."
   #elif DISABLED(BABYSTEP_ALWAYS_AVAILABLE)
     #error "DGUS_LCD_UI_RELOADED requires BABYSTEP_ALWAYS_AVAILABLE."
-  #elif DISABLED(BABYSTEP_ZPROBE_OFFSET)
-    #error "DGUS_LCD_UI_RELOADED requires BABYSTEP_ZPROBE_OFFSET."
+  #elif DISABLED(BABYSTEP_ZPROBE_OFFSET) && HAS_BED_PROBE
+    #error "DGUS_LCD_UI_RELOADED requires BABYSTEP_ZPROBE_OFFSET with a probe."
   #elif ENABLED(AUTO_BED_LEVELING_UBL) && DISABLED(UBL_SAVE_ACTIVE_ON_M500)
     #warning "Without UBL_SAVE_ACTIVE_ON_M500, your mesh will not be saved when using the touchscreen."
-  #endif
+  #elif DISABLED(ADVANCED_PAUSE_FEATURE)
+    #error "DGUS_LCD_UI_RELOADED requires ADVANCED_PAUSE_FEATURE."
+#endif
 #endif
 
 // Misc. Cleanup

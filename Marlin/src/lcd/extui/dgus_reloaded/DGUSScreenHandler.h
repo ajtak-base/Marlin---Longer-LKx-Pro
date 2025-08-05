@@ -46,10 +46,11 @@ public:
   static void ConfigurationStoreRead(bool success);
 
   static void PlayTone(const uint16_t frequency, const uint16_t duration);
-  static void MeshUpdate(const int8_t xpos, const int8_t ypos);
+  static void MeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval);
   static void PrintTimerStarted();
   static void PrintTimerPaused();
   static void PrintTimerStopped();
+  static void PrintFinished();
   static void FilamentRunout(const ExtUI::extruder_t extruder);
 
   #if ENABLED(SDSUPPORT)
@@ -59,76 +60,87 @@ public:
     static void SDCardRemoved();
     /// Marlin informed us about a bad SD Card.
     static void SDCardError();
-  #endif
+#endif
 
-  #if ENABLED(POWER_LOSS_RECOVERY)
+#if ENABLED(POWER_LOSS_RECOVERY)
     static void PowerLossResume();
-  #endif
+#endif
 
-  #if HAS_PID_HEATING
+#if HAS_PID_HEATING
     static void PidTuning(const ExtUI::result_t rst);
-  #endif
+#endif
 
-  static void SetMessageLine(const char* msg, uint8_t line);
-  static void SetMessageLinePGM(PGM_P msg, uint8_t line);
+    static void ShowPauseMessage(PauseMessage message, PauseMode mode);
 
+    static void SetMessageLine(const char *msg, uint8_t line);
+    static void SetMessageLinePGM(PGM_P msg, uint8_t line);
   static void SetStatusMessage(const char* msg, const millis_t duration = DGUS_STATUS_EXPIRATION_MS);
   static void SetStatusMessage(FSTR_P const msg, const millis_t duration = DGUS_STATUS_EXPIRATION_MS);
 
-  static void ShowWaitScreen(DGUS_Screen return_screen, bool has_continue = false);
+    static void SetTextSize(DGUS_Addr var, uint16_t len, const int16_t *boxSize, bool center = false);
+    static void ShowWaitScreen(DGUS_Screen return_screen, bool has_continue = false);
 
-  static DGUS_Screen GetCurrentScreen();
-  static void TriggerScreenChange(DGUS_Screen screen);
-  static void TriggerFullUpdate();
+    static DGUS_Screen GetCurrentScreen();
+    static void TriggerScreenChange(DGUS_Screen screen);
+    static void TriggerFullUpdate();
 
-  static void TriggerEEPROMSave();
+    static void TriggerEEPROMSave();
 
-  static bool IsPrinterIdle();
+    static bool IsPrinterIdle();
 
-  static uint8_t debug_count;
+    static void MoveToLevelPoint();
 
-  #if ENABLED(SDSUPPORT)
+    static uint8_t debug_count;
+
+#if ENABLED(SDSUPPORT)
     static ExtUI::FileList filelist;
     static uint16_t filelist_offset;
     static int16_t filelist_selected;
+#endif
+
+    static DGUS_Data::StepSize offset_steps;
+    static DGUS_Data::StepSize move_steps;
+
+  #if HAS_LEVELING
+    static uint16_t probing_colors[2];
+    static float probing_values[GRID_MAX_POINTS_X][GRID_MAX_POINTS_Y];
+  #else
+    static float baby_offset;
   #endif
+    
+    static uint8_t levelingPoint;
 
-  static DGUS_Data::StepSize offset_steps;
-  static DGUS_Data::StepSize move_steps;
+    static DGUS_Data::Extruder filament_extruder;
+    static uint16_t filament_length;
 
-  static uint16_t probing_icons[2];
+    static char gcode[DGUS_GCODE_LEN + 1];
 
-  static DGUS_Data::Extruder filament_extruder;
-  static uint16_t filament_length;
+    static DGUS_Data::Heater pid_heater;
+    static uint16_t pid_temp;
+    static uint8_t pid_cycles;
 
-  static char gcode[DGUS_GCODE_LEN + 1];
+    static bool wait_continue;
 
-  static DGUS_Data::Heater pid_heater;
-  static uint16_t pid_temp;
-  static uint8_t pid_cycles;
-
-  static bool wait_continue;
-
-  static bool leveling_active;
+    static bool leveling_active;
 
 private:
-  static const DGUS_Addr* FindScreenAddrList(DGUS_Screen screen);
-  static bool CallScreenSetup(DGUS_Screen screen);
+    static const DGUS_Addr *FindScreenAddrList(DGUS_Screen screen);
+    static bool CallScreenSetup(DGUS_Screen screen);
 
-  static void MoveToScreen(DGUS_Screen screen, bool abort_wait = false);
-  static bool SendScreenVPData(DGUS_Screen screen, bool complete_update);
+    static void MoveToScreen(DGUS_Screen screen, bool abort_wait = false);
+    static bool SendScreenVPData(DGUS_Screen screen, bool complete_update);
 
-  static bool settings_ready;
-  static bool booted;
+    static bool settings_ready;
+    static bool booted;
 
-  static DGUS_Screen current_screen;
-  static DGUS_Screen new_screen;
-  static bool full_update;
+    static DGUS_Screen current_screen;
+    static DGUS_Screen new_screen;
+    static bool full_update;
 
-  static DGUS_Screen wait_return_screen;
+    static DGUS_Screen wait_return_screen;
 
-  static millis_t status_expire;
-  static millis_t eeprom_save;
+    static millis_t status_expire;
+    static millis_t eeprom_save;
 
   typedef struct {
     bool initialized;
@@ -141,11 +153,11 @@ private:
 extern DGUSScreenHandler dgus_screen_handler;
 
 extern const char DGUS_MSG_HOMING_REQUIRED[],
-                  DGUS_MSG_BUSY[],
-                  DGUS_MSG_UNDEF[],
-                  DGUS_MSG_HOMING[],
-                  DGUS_MSG_FW_OUTDATED[],
-                  DGUS_MSG_ABL_REQUIRED[];
+    DGUS_MSG_BUSY[],
+    DGUS_MSG_UNDEF[],
+    DGUS_MSG_HOMING[],
+    DGUS_MSG_FW_OUTDATED[],
+    DGUS_MSG_ABL_REQUIRED[];
 
 extern const char DGUS_CMD_HOME[],
-                  DGUS_CMD_EEPROM_SAVE[];
+    DGUS_CMD_EEPROM_SAVE[];

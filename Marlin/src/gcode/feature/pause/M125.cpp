@@ -32,6 +32,10 @@
 #include "../../../module/printcounter.h"
 #include "../../../sd/cardreader.h"
 
+#if ENABLED(EXTENSIBLE_UI)
+  #include "../../../lcd/extui/ui_api.h"
+#endif
+
 #if ENABLED(POWER_LOSS_RECOVERY)
   #include "../../../feature/powerloss.h"
 #endif
@@ -91,6 +95,7 @@ void GcodeSuite::M125() {
   const bool sd_printing = TERN0(SDSUPPORT, IS_SD_PRINTING());
 
   ui.pause_show_message(PAUSE_MESSAGE_PARKING, PAUSE_MODE_PAUSE_PRINT);
+  TERN_(EXTENSIBLE_UI, ExtUI::onPauseMessage(PAUSE_MESSAGE_PARKING, PAUSE_MODE_PAUSE_PRINT));
 
   // If possible, show an LCD prompt with the 'P' flag
   const bool show_lcd = TERN0(HAS_MARLINUI_MENU, parser.boolval('P'));

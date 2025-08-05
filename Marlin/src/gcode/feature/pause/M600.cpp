@@ -106,6 +106,7 @@ void GcodeSuite::M600() {
   // Show initial "wait for start" message
   if (standardM600)
     ui.pause_show_message(PAUSE_MESSAGE_CHANGING, PAUSE_MODE_PAUSE_PRINT, target_extruder);
+    TERN_(EXTENSIBLE_UI, ExtUI::onPauseMessage(PAUSE_MESSAGE_CHANGING, PAUSE_MODE_PAUSE_PRINT));
 
   // If needed, home before parking for filament change
   TERN_(HOME_BEFORE_FILAMENT_CHANGE, home_if_needed(true));

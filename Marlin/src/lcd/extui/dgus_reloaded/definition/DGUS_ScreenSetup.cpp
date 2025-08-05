@@ -31,27 +31,32 @@
 #include "../../ui_api.h"
 
 #define SETUP_HELPER(SCREEN, SETUP) \
-  { .screen = SCREEN, \
-  .setup_fn = SETUP }
+    {                               \
+        .screen = SCREEN,           \
+        .setup_fn = SETUP           \
+    }
 
 const struct DGUS_ScreenSetup screen_setup_list[] PROGMEM = {
-  #if ENABLED(SDSUPPORT)
-    SETUP_HELPER(DGUS_Screen::PRINT,            &DGUSSetupHandler::Print),
-  #endif
-  SETUP_HELPER(DGUS_Screen::PRINT_STATUS,       &DGUSSetupHandler::PrintStatus),
-  SETUP_HELPER(DGUS_Screen::PRINT_ADJUST,       &DGUSSetupHandler::PrintAdjust),
-  SETUP_HELPER(DGUS_Screen::LEVELING_MENU,      &DGUSSetupHandler::LevelingMenu),
-  SETUP_HELPER(DGUS_Screen::LEVELING_OFFSET,    &DGUSSetupHandler::LevelingOffset),
-  SETUP_HELPER(DGUS_Screen::LEVELING_MANUAL,    &DGUSSetupHandler::LevelingManual),
-  SETUP_HELPER(DGUS_Screen::LEVELING_AUTOMATIC, &DGUSSetupHandler::LevelingAutomatic),
-  SETUP_HELPER(DGUS_Screen::LEVELING_PROBING,   &DGUSSetupHandler::LevelingProbing),
-  SETUP_HELPER(DGUS_Screen::FILAMENT,           &DGUSSetupHandler::Filament),
-  SETUP_HELPER(DGUS_Screen::MOVE,               &DGUSSetupHandler::Move),
-  SETUP_HELPER(DGUS_Screen::GCODE,              &DGUSSetupHandler::Gcode),
-  SETUP_HELPER(DGUS_Screen::PID,                &DGUSSetupHandler::PID),
-  SETUP_HELPER(DGUS_Screen::INFOS,              &DGUSSetupHandler::Infos),
+#if ENABLED(SDSUPPORT)
+    SETUP_HELPER(DGUS_Screen::PRINT, &DGUSSetupHandler::Print),
+    SETUP_HELPER(DGUS_Screen::HOME, &DGUSSetupHandler::ResetSelectedFile),
+#endif
+    SETUP_HELPER(DGUS_Screen::PRINT_STATUS, &DGUSSetupHandler::PrintStatus),
+    SETUP_HELPER(DGUS_Screen::PRINT_ADJUST, &DGUSSetupHandler::PrintAdjust),
+    SETUP_HELPER(DGUS_Screen::LEVELING_MANUAL, &DGUSSetupHandler::LevelingManual),
+#if HAS_LEVELING
+    SETUP_HELPER(DGUS_Screen::LEVELING_MENU, &DGUSSetupHandler::LevelingMenu),
+    SETUP_HELPER(DGUS_Screen::LEVELING_OFFSET, &DGUSSetupHandler::LevelingOffset),
+    SETUP_HELPER(DGUS_Screen::LEVELING_AUTOMATIC, &DGUSSetupHandler::LevelingAutomatic),
+    SETUP_HELPER(DGUS_Screen::LEVELING_PROBING, &DGUSSetupHandler::LevelingProbing),
+#endif
+    SETUP_HELPER(DGUS_Screen::FILAMENT, &DGUSSetupHandler::Filament),
+    SETUP_HELPER(DGUS_Screen::MOVE, &DGUSSetupHandler::Move),
+    SETUP_HELPER(DGUS_Screen::GCODE, &DGUSSetupHandler::Gcode),
+    SETUP_HELPER(DGUS_Screen::PID, &DGUSSetupHandler::PID),
+    SETUP_HELPER(DGUS_Screen::INFOS, &DGUSSetupHandler::Infos),
 
-  SETUP_HELPER((DGUS_Screen)0, nullptr)
+    SETUP_HELPER((DGUS_Screen)0, nullptr) 
 };
 
 #endif // DGUS_LCD_UI_RELOADED

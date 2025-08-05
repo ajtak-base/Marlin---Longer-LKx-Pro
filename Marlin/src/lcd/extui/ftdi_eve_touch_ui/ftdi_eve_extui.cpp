@@ -153,6 +153,7 @@ namespace ExtUI {
     }
   #endif // HAS_PID_HEATING
 
+  void onPauseMessage(PauseMessage message, PauseMode mode) {}
   void onSteppersDisabled() {}
   void onSteppersEnabled()  {}
 }

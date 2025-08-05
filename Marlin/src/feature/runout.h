@@ -142,6 +142,7 @@ class TFilamentMonitor : public FilamentMonitorBase {
         #endif
 
         #if ENABLED(FILAMENT_RUNOUT_SENSOR_DEBUG)
+//            SERIAL_ECHOLNPAIR("pin", FIL_RUNOUT1_PIN, " state ", FIL_RUNOUT1_STATE, " pullup ", ENABLED(FIL_RUNOUT1_PULLUP));
           if (runout_flags) {
             SERIAL_ECHOPGM("Runout Sensors: ");
             LOOP_L_N(i, 8) SERIAL_ECHO('0' + TEST(runout_flags, i));

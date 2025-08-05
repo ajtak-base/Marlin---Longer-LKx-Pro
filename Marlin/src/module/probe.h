@@ -205,28 +205,29 @@ public:
      * close it can get the RIGHT edge of the bed (unless the nozzle is able move
      * far enough past the right edge).
      */
-    static constexpr float _min_x(const xy_pos_t &probe_offset_xy=offset_xy) {
+     // LGT_MAC  
+    static constexpr float _min_x(const xy_pos_t& probe_offset_xy = offset_xy) {
       return TERN(IS_KINEMATIC,
         (X_CENTER) - probe_radius(probe_offset_xy),
-        _MAX((X_MIN_BED) + (PROBING_MARGIN_LEFT), (X_MIN_POS) + probe_offset_xy.x)
+        _MAX((X_MIN_BED)+(PROBING_MARGIN_LEFT), TERN(EQUAL_MARGIN_ALL_SIDES, (X_MIN_BED)+_MAX(abs(probe_offset_xy.x), abs(probe_offset_xy.y)), (X_MIN_POS)+probe_offset_xy.x))
       );
     }
     static constexpr float _max_x(const xy_pos_t &probe_offset_xy=offset_xy) {
       return TERN(IS_KINEMATIC,
         (X_CENTER) + probe_radius(probe_offset_xy),
-        _MIN((X_MAX_BED) - (PROBING_MARGIN_RIGHT), (X_MAX_POS) + probe_offset_xy.x)
+        _MIN((X_MAX_BED)-(PROBING_MARGIN_RIGHT), TERN(EQUAL_MARGIN_ALL_SIDES, (X_MAX_BED)-_MAX(abs(probe_offset_xy.x), abs(probe_offset_xy.y)), (X_MAX_POS)+probe_offset_xy.x))
       );
     }
     static constexpr float _min_y(const xy_pos_t &probe_offset_xy=offset_xy) {
       return TERN(IS_KINEMATIC,
         (Y_CENTER) - probe_radius(probe_offset_xy),
-        _MAX((Y_MIN_BED) + (PROBING_MARGIN_FRONT), (Y_MIN_POS) + probe_offset_xy.y)
+        _MAX((Y_MIN_BED)+(PROBING_MARGIN_FRONT), TERN(EQUAL_MARGIN_ALL_SIDES, (Y_MIN_BED)+_MAX(abs(probe_offset_xy.x), abs(probe_offset_xy.y)), (Y_MIN_POS)+probe_offset_xy.y))
       );
     }
     static constexpr float _max_y(const xy_pos_t &probe_offset_xy=offset_xy) {
       return TERN(IS_KINEMATIC,
         (Y_CENTER) + probe_radius(probe_offset_xy),
-        _MIN((Y_MAX_BED) - (PROBING_MARGIN_BACK), (Y_MAX_POS) + probe_offset_xy.y)
+        _MIN((Y_MAX_BED)-(PROBING_MARGIN_BACK), TERN(EQUAL_MARGIN_ALL_SIDES, (Y_MAX_BED)-_MAX(abs(probe_offset_xy.x), abs(probe_offset_xy.y)), (Y_MAX_POS)+probe_offset_xy.y))
       );
     }
 

@@ -25,7 +25,7 @@
 #if HAS_DGUS_LCD_CLASSIC
 
 #if HOTENDS > 2
-  #warning "More than 2 hotends not implemented on DGUS Display UI."
+#warning "More than 2 hotends not implemented on DGUS Display UI."
 #endif
 
 #include "../ui_api.h"
@@ -37,7 +37,7 @@
 #include "../../../libs/duration_t.h"
 #include "../../../module/printcounter.h"
 #if ENABLED(POWER_LOSS_RECOVERY)
-  #include "../../../feature/powerloss.h"
+#include "../../../feature/powerloss.h"
 #endif
 
 #include "DGUSDisplay.h"
@@ -60,29 +60,30 @@ constexpr uint8_t DGUS_CMD_WRITEVAR = 0x82;
 constexpr uint8_t DGUS_CMD_READVAR = 0x83;
 
 #if ENABLED(DEBUG_DGUSLCD)
-  bool dguslcd_local_debug; // = false;
+bool dguslcd_local_debug; // = false;
 #endif
 
 void DGUSDisplay::InitDisplay() {
-  #ifndef LCD_BAUDRATE
-    #define LCD_BAUDRATE 115200
-  #endif
+#ifndef LCD_BAUDRATE
+#define LCD_BAUDRATE 115200
+#endif
   LCD_SERIAL.begin(LCD_BAUDRATE);
 
   if (TERN1(POWER_LOSS_RECOVERY, !recovery.valid())) {  // If no Power-Loss Recovery is needed...
-    TERN_(DGUS_LCD_UI_MKS, delay(LOGO_TIME_DELAY));     // Show the logo for a little while
+    TERN_(DGUS_LCD_UI_MKS, delay(LOGO_TIME_DELAY)); // Show the logo for a little while
   }
 
   RequestScreen(TERN(SHOW_BOOTSCREEN, DGUSLCD_SCREEN_BOOT, DGUSLCD_SCREEN_MAIN));
 }
 
-void DGUSDisplay::WriteVariable(uint16_t adr, const void *values, uint8_t valueslen, bool isstr) {
+void DGUSDisplay::WriteVariable(uint16_t adr, const void* values, uint8_t valueslen, bool isstr) {
   const char* myvalues = static_cast<const char*>(values);
   bool strend = !myvalues;
   WriteHeader(adr, DGUS_CMD_WRITEVAR, valueslen);
   while (valueslen--) {
     char x;
-    if (!strend) x = *myvalues++;
+    if (!strend)
+      x = *myvalues++;
     if ((isstr && !x) || strend) {
       strend = true;
       x = ' ';
@@ -110,7 +111,10 @@ void DGUSDisplay::WriteVariable(uint16_t adr, int8_t value) {
 }
 
 void DGUSDisplay::WriteVariable(uint16_t adr, long value) {
-  union { long l; char lb[4]; } endian;
+  union   {
+    long l;
+    char lb[4];
+  } endian;
   char tmp[4];
   endian.l = value;
   tmp[0] = endian.lb[3];
@@ -120,13 +124,14 @@ void DGUSDisplay::WriteVariable(uint16_t adr, long value) {
   WriteVariable(adr, static_cast<const void*>(&tmp), sizeof(long));
 }
 
-void DGUSDisplay::WriteVariablePGM(uint16_t adr, const void *values, uint8_t valueslen, bool isstr) {
+void DGUSDisplay::WriteVariablePGM(uint16_t adr, const void* values, uint8_t valueslen, bool isstr) {
   const char* myvalues = static_cast<const char*>(values);
   bool strend = !myvalues;
   WriteHeader(adr, DGUS_CMD_WRITEVAR, valueslen);
   while (valueslen--) {
     char x;
-    if (!strend) x = pgm_read_byte(myvalues++);
+    if (!strend)
+      x = pgm_read_byte(myvalues++);
     if ((isstr && !x) || strend) {
       strend = true;
       x = ' ';
@@ -137,16 +142,16 @@ void DGUSDisplay::WriteVariablePGM(uint16_t adr, const void *values, uint8_t val
 
 void DGUSDisplay::ProcessRx() {
 
-  #if ENABLED(SERIAL_STATS_RX_BUFFER_OVERRUNS)
-    if (!LCD_SERIAL.available() && LCD_SERIAL.buffer_overruns()) {
-      // Overrun, but reset the flag only when the buffer is empty
-      // We want to extract as many as valid datagrams possible...
-      DEBUG_ECHOPGM("OVFL");
-      rx_datagram_state = DGUS_IDLE;
-      //LCD_SERIAL.reset_rx_overun();
-      LCD_SERIAL.flush();
-    }
-  #endif
+#if ENABLED(SERIAL_STATS_RX_BUFFER_OVERRUNS)
+  if (!LCD_SERIAL.available() && LCD_SERIAL.buffer_overruns()) {
+    // Overrun, but reset the flag only when the buffer is empty
+    // We want to extract as many as valid datagrams possible...
+    DEBUG_ECHOPGM("OVFL");
+    rx_datagram_state = DGUS_IDLE;
+    //LCD_SERIAL.reset_rx_overun();
+    LCD_SERIAL.flush();
+  }
+#endif
 
   uint8_t receivedbyte;
   while (LCD_SERIAL.available()) {
@@ -168,15 +173,16 @@ void DGUSDisplay::ProcessRx() {
         rx_datagram_len = LCD_SERIAL.read();
         //DEBUGLCDCOMM_ECHOPGM(" (", rx_datagram_len, ") ");
 
-        // Telegram min len is 3 (command and one word of payload)
-        rx_datagram_state = WITHIN(rx_datagram_len, 3, DGUS_RX_BUFFER_SIZE) ? DGUS_WAIT_TELEGRAM : DGUS_IDLE;
-        break;
+      // Telegram min len is 3 (command and one word of payload)
+      rx_datagram_state = WITHIN(rx_datagram_len, 3, DGUS_RX_BUFFER_SIZE) ? DGUS_WAIT_TELEGRAM : DGUS_IDLE;
+      break;
 
-      case DGUS_WAIT_TELEGRAM: // wait for complete datagram to arrive.
-        if (LCD_SERIAL.available() < rx_datagram_len) return;
+    case DGUS_WAIT_TELEGRAM: // wait for complete datagram to arrive.
+      if (LCD_SERIAL.available() < rx_datagram_len)
+        return;
 
-        Initialized = true; // We've talked to it, so we defined it as initialized.
-        uint8_t command = LCD_SERIAL.read();
+      Initialized = true; // We've talked to it, so we defined it as initialized.
+      uint8_t command = LCD_SERIAL.read();
 
         //DEBUGLCDCOMM_ECHOPGM("# ", command);
 
@@ -196,30 +202,30 @@ void DGUSDisplay::ProcessRx() {
           break;
         }
 
-        /* AutoUpload, (and answer to) Command 0x83 :
+      /* AutoUpload, (and answer to) Command 0x83 :
         |      tmp[0  1  2  3  4 ... ]
         | Example 5A A5 06 83 20 01 01 78 01 ……
         |          / /  |  |   \ /   |  \     \
         |        Header |  |    |    |   \_____\_ DATA (Words!)
         |     DatagramLen  /  VPAdr  |
         |           Command          DataLen (in Words) */
-        if (command == DGUS_CMD_READVAR) {
-          const uint16_t vp = tmp[0] << 8 | tmp[1];
-          //const uint8_t dlen = tmp[2] << 1;  // Convert to Bytes. (Display works with words)
-          //DEBUG_ECHOPGM(" vp=", vp, " dlen=", dlen);
-          DGUS_VP_Variable ramcopy;
-          if (populate_VPVar(vp, &ramcopy)) {
-            if (ramcopy.set_by_display_handler)
-              ramcopy.set_by_display_handler(ramcopy, &tmp[3]);
-            else
-              DEBUG_ECHOLNPGM(" VPVar found, no handler.");
-          }
+      if (command == DGUS_CMD_READVAR) {
+        const uint16_t vp = tmp[0] << 8 | tmp[1];
+        //const uint8_t dlen = tmp[2] << 1;  // Convert to Bytes. (Display works with words)
+        //DEBUG_ECHOPGM(" vp=", vp, " dlen=", dlen);
+        DGUS_VP_Variable ramcopy;
+        if (populate_VPVar(vp, &ramcopy)) {
+          if (ramcopy.set_by_display_handler)
+            ramcopy.set_by_display_handler(ramcopy, &tmp[3]);
           else
-            DEBUG_ECHOLNPGM(" VPVar not found:", vp);
-
-          rx_datagram_state = DGUS_IDLE;
-          break;
+            DEBUG_ECHOLNPGM(" VPVar found, no handler.");
         }
+        else
+          DEBUG_ECHOLNPGM(" VPVar not found:", vp);
+
+        rx_datagram_state = DGUS_IDLE;
+        break;
+      }
 
       // discard anything else
       rx_datagram_state = DGUS_IDLE;
@@ -239,7 +245,8 @@ void DGUSDisplay::WriteHeader(uint16_t adr, uint8_t cmd, uint8_t payloadlen) {
 }
 
 void DGUSDisplay::WritePGM(const char str[], uint8_t len) {
-  while (len--) LCD_SERIAL.write(pgm_read_byte(str++));
+  while (len--)
+    LCD_SERIAL.write(pgm_read_byte(str++));
 }
 
 void DGUSDisplay::loop() {
@@ -257,7 +264,10 @@ bool DGUSDisplay::Initialized = false,
      DGUSDisplay::no_reentrance = false;
 
 // A SW memory barrier, to ensure GCC does not overoptimize loops
-#define sw_barrier() asm volatile("": : :"memory");
+#define sw_barrier() asm volatile("" \
+                                  :  \
+                                  :  \
+                                  : "memory");
 
 bool populate_VPVar(const uint16_t VP, DGUS_VP_Variable * const ramcopy) {
   //DEBUG_ECHOPGM("populate_VPVar ", VP);

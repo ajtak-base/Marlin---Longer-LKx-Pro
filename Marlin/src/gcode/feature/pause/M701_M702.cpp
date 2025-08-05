@@ -43,6 +43,10 @@
   #include "../../../feature/mixing.h"
 #endif
 
+#if ENABLED(EXTENSIBLE_UI)
+  #include "../../../lcd/extui/ui_api.h"
+#endif
+
 /**
  * M701: Load filament
  *
@@ -80,6 +84,7 @@ void GcodeSuite::M701() {
 
   // Show initial "wait for load" message
   ui.pause_show_message(PAUSE_MESSAGE_LOAD, PAUSE_MODE_LOAD_FILAMENT, target_extruder);
+  TERN_(EXTENSIBLE_UI, ExtUI::onPauseMessage(PAUSE_MESSAGE_LOAD, PAUSE_MODE_LOAD_FILAMENT));
 
   #if HAS_MULTI_EXTRUDER && (HAS_PRUSA_MMU1 || !HAS_MMU)
     // Change toolhead if specified
@@ -131,6 +136,7 @@ void GcodeSuite::M701() {
 
   // Show status screen
   ui.pause_show_message(PAUSE_MESSAGE_STATUS);
+  TERN_(EXTENSIBLE_UI, ExtUI::onPauseMessage(PAUSE_MESSAGE_STATUS, PAUSE_MODE_SAME));
 }
 
 /**
@@ -183,6 +189,7 @@ void GcodeSuite::M702() {
 
   // Show initial "wait for unload" message
   ui.pause_show_message(PAUSE_MESSAGE_UNLOAD, PAUSE_MODE_UNLOAD_FILAMENT, target_extruder);
+  TERN_(EXTENSIBLE_UI, ExtUI::onPauseMessage(PAUSE_MESSAGE_UNLOAD, PAUSE_MODE_UNLOAD_FILAMENT));
 
   #if HAS_MULTI_EXTRUDER && (HAS_PRUSA_MMU1 || !HAS_MMU)
     // Change toolhead if specified
@@ -235,6 +242,7 @@ void GcodeSuite::M702() {
 
   // Show status screen
   ui.pause_show_message(PAUSE_MESSAGE_STATUS);
+  TERN_(EXTENSIBLE_UI, ExtUI::onPauseMessage(PAUSE_MESSAGE_STATUS, PAUSE_MODE_SAME));
 }
 
 #endif // ADVANCED_PAUSE_FEATURE

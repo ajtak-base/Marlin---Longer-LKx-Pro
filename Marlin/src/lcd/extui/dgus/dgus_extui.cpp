@@ -63,44 +63,43 @@ namespace ExtUI {
       ScreenHandler.sendinfoscreen(F("Please confirm."), nullptr, msg, nullptr, true, true, false, true);
       ScreenHandler.SetupConfirmAction(setUserConfirmed);
       ScreenHandler.GotoScreen(DGUSLCD_SCREEN_POPUP);
+        }
+        else if (ScreenHandler.getCurrentScreen() == DGUSLCD_SCREEN_POPUP)
+        {
+            ScreenHandler.SetupConfirmAction(nullptr);
+            ScreenHandler.PopToOldScreen();
+        }
     }
-    else if (ScreenHandler.getCurrentScreen() == DGUSLCD_SCREEN_POPUP) {
-      ScreenHandler.SetupConfirmAction(nullptr);
-      ScreenHandler.PopToOldScreen();
-    }
-  }
 
-  void onStatusChanged(const char * const msg) { ScreenHandler.setstatusmessage(msg); }
+    void onStatusChanged(const char *const msg) { ScreenHandler.setstatusmessage(msg); }
 
   void onHomingStart() {}
   void onHomingDone() {}
   void onPrintDone() {}
 
-  void onFactoryReset() {}
+    void onFactoryReset() {}
 
-  void onStoreSettings(char *buff) {
-    // Called when saving to EEPROM (i.e. M500). If the ExtUI needs
-    // permanent data to be stored, it can write up to eeprom_data_size bytes
-    // into buff.
+    void onStoreSettings(char *buff)
+    {
+        // Called when saving to EEPROM (i.e. M500). If the ExtUI needs
+        // permanent data to be stored, it can write up to eeprom_data_size bytes
+        // into buff.
 
-    // Example:
-    //  static_assert(sizeof(myDataStruct) <= eeprom_data_size);
-    //  memcpy(buff, &myDataStruct, sizeof(myDataStruct));
-  }
+        // Example:
+        //  static_assert(sizeof(myDataStruct) <= eeprom_data_size);
+        //  memcpy(buff, &myDataStruct, sizeof(myDataStruct));
+    }
 
-  void onLoadSettings(const char *buff) {
-    // Called while loading settings from EEPROM. If the ExtUI
-    // needs to retrieve data, it should copy up to eeprom_data_size bytes
-    // from buff
+    void onLoadSettings(const char *buff)
+    {
+        // Called while loading settings from EEPROM. If the ExtUI
+        // needs to retrieve data, it should copy up to eeprom_data_size bytes
+        // from buff
 
-    // Example:
-    //  static_assert(sizeof(myDataStruct) <= eeprom_data_size);
-    //  memcpy(&myDataStruct, buff, sizeof(myDataStruct));
-  }
-
-  void onPostprocessSettings() {
-    // Called after loading or resetting stored settings
-  }
+        // Example:
+        //  static_assert(sizeof(myDataStruct) <= eeprom_data_size);
+        //  memcpy(&myDataStruct, buff, sizeof(myDataStruct));
+    }
 
   void onSettingsStored(bool success) {
     // Called after the entire EEPROM has been written,
@@ -116,48 +115,61 @@ namespace ExtUI {
     void onLevelingStart() {}
     void onLevelingDone() {}
 
-    void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval) {
-      // Called when any mesh points are updated
+    void onMeshLevelingStart()
+    {
     }
 
-    void onMeshUpdate(const int8_t xpos, const int8_t ypos, const probe_state_t state) {
-      // Called to indicate a special condition
+    void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval)
+    {
+        // Called when any mesh points are updated
     }
-  #endif
 
-  #if ENABLED(POWER_LOSS_RECOVERY)
-    void onPowerLossResume() {
-      // Called on resume from power-loss
-      IF_DISABLED(DGUS_LCD_UI_MKS, ScreenHandler.GotoScreen(DGUSLCD_SCREEN_POWER_LOSS));
+    void onMeshUpdate(const int8_t xpos, const int8_t ypos, const probe_state_t state)
+    {
+        // Called to indicate a special condition
     }
-  #endif
+#endif
 
-  #if HAS_PID_HEATING
-    void onPidTuning(const result_t rst) {
-      // Called for temperature PID tuning result
-      switch (rst) {
+#if ENABLED(POWER_LOSS_RECOVERY)
+    void onPowerLossResume()
+    {
+        // Called on resume from power-loss
+        IF_DISABLED(DGUS_LCD_UI_MKS, ScreenHandler.GotoScreen(DGUSLCD_SCREEN_POWER_LOSS));
+    }
+#endif
+
+#if HAS_PID_HEATING
+    void onPidTuning(const result_t rst)
+    {
+        // Called for temperature PID tuning result
+        switch (rst)
+        {
         case PID_STARTED:
-          ScreenHandler.setstatusmessagePGM(GET_TEXT(MSG_PID_AUTOTUNE));
-          break;
+            ScreenHandler.setstatusmessagePGM(GET_TEXT(MSG_PID_AUTOTUNE));
+            break;
         case PID_BAD_EXTRUDER_NUM:
-          ScreenHandler.setstatusmessagePGM(GET_TEXT(MSG_PID_BAD_EXTRUDER_NUM));
-          break;
+            ScreenHandler.setstatusmessagePGM(GET_TEXT(MSG_PID_BAD_EXTRUDER_NUM));
+            break;
         case PID_TEMP_TOO_HIGH:
-          ScreenHandler.setstatusmessagePGM(GET_TEXT(MSG_PID_TEMP_TOO_HIGH));
-          break;
+            ScreenHandler.setstatusmessagePGM(GET_TEXT(MSG_PID_TEMP_TOO_HIGH));
+            break;
         case PID_TUNING_TIMEOUT:
-          ScreenHandler.setstatusmessagePGM(GET_TEXT(MSG_PID_TIMEOUT));
-          break;
+            ScreenHandler.setstatusmessagePGM(GET_TEXT(MSG_PID_TIMEOUT));
+            break;
         case PID_DONE:
-          ScreenHandler.setstatusmessagePGM(GET_TEXT(MSG_PID_AUTOTUNE_DONE));
-          break;
-      }
-      ScreenHandler.GotoScreen(DGUSLCD_SCREEN_MAIN);
+            ScreenHandler.setstatusmessagePGM(GET_TEXT(MSG_PID_AUTOTUNE_DONE));
+            break;
+        }
+        ScreenHandler.GotoScreen(DGUSLCD_SCREEN_MAIN);
     }
-  #endif
+#endif
 
-  void onSteppersDisabled() {}
-  void onSteppersEnabled()  {}
+    void onPauseMessage(PauseMessage message, PauseMode mode)
+    {
+    }
+
+    void onSteppersDisabled() {}
+    void onSteppersEnabled() {}
 }
 
 #endif // HAS_DGUS_LCD_CLASSIC

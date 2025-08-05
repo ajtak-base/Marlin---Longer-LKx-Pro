@@ -23,20 +23,22 @@
 
 namespace DGUSSetupHandler {
 
-  #if ENABLED(SDSUPPORT)
-    bool Print();
-  #endif
-  bool PrintStatus();
-  bool PrintAdjust();
+#if ENABLED(SDSUPPORT)
+  bool Print();
+  bool ResetSelectedFile();
+#endif
+bool PrintStatus();
+bool PrintAdjust();
+bool LevelingManual();
+#if HAS_LEVELING
   bool LevelingMenu();
   bool LevelingOffset();
-  bool LevelingManual();
   bool LevelingAutomatic();
   bool LevelingProbing();
-  bool Filament();
-  bool Move();
-  bool Gcode();
-  bool PID();
-  bool Infos();
-
+#endif
+bool Filament();
+bool Move();
+bool Gcode();
+bool PID();
+bool Infos();
 }

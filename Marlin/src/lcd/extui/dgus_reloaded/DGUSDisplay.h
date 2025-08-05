@@ -33,7 +33,7 @@
 #define DEBUG_OUT ENABLED(DEBUG_DGUSLCD)
 #include "../../../core/debug_out.h"
 
-#define Swap16(val) ((uint16_t)(((uint16_t)(val) >> 8) |\
+#define Swap16(val) ((uint16_t)(((uint16_t)(val) >> 8) | \
                                 ((uint16_t)(val) << 8)))
 
 // Low-Level access to the display.
@@ -132,43 +132,43 @@ public:
 
 private:
   enum dgus_header : uint8_t {
-    DGUS_HEADER1 = 0x5A,
-    DGUS_HEADER2 = 0xA5
-  };
+        DGUS_HEADER1 = 0x5A,
+        DGUS_HEADER2 = 0xA5
+    };
 
   enum dgus_command : uint8_t {
-    DGUS_WRITEVAR = 0x82,
-    DGUS_READVAR = 0x83
-  };
+        DGUS_WRITEVAR = 0x82,
+        DGUS_READVAR = 0x83
+    };
 
   enum rx_datagram_state_t : uint8_t {
-    DGUS_IDLE,           //< waiting for DGUS_HEADER1.
-    DGUS_HEADER1_SEEN,   //< DGUS_HEADER1 received
-    DGUS_HEADER2_SEEN,   //< DGUS_HEADER2 received
-    DGUS_WAIT_TELEGRAM,  //< LEN received, Waiting for to receive all bytes.
-  };
+        DGUS_IDLE,          //< waiting for DGUS_HEADER1.
+        DGUS_HEADER1_SEEN,  //< DGUS_HEADER1 received
+        DGUS_HEADER2_SEEN,  //< DGUS_HEADER2 received
+        DGUS_WAIT_TELEGRAM, //< LEN received, Waiting for to receive all bytes.
+    };
 
   enum dgus_system_addr : uint16_t {
-    DGUS_VERSION = 0x000f // OS/GUI version
-  };
+        DGUS_VERSION = 0x000f // OS/GUI version
+    };
 
-  static void WriteHeader(uint16_t addr, uint8_t command, uint8_t len);
-  static void ProcessRx();
+    static void WriteHeader(uint16_t addr, uint8_t command, uint8_t len);
+    static void ProcessRx();
 
-  static uint8_t volume;
-  static uint8_t brightness;
+    static uint8_t volume;
+    static uint8_t brightness;
 
-  static rx_datagram_state_t rx_datagram_state;
-  static uint8_t rx_datagram_len;
+    static rx_datagram_state_t rx_datagram_state;
+    static uint8_t rx_datagram_len;
 
-  static bool initialized;
+    static bool initialized;
 };
 
 template<> inline uint16_t DGUSDisplay::SwapBytes(const uint16_t value) {
-  return ((value << 8) | (value >> 8));
+    return ((value << 8) | (value >> 8));
 }
 
 extern DGUSDisplay dgus_display;
 
 /// Helper to populate a DGUS_VP for a given VP. Return false if not found.
-extern bool DGUS_PopulateVP(const DGUS_Addr addr, DGUS_VP * const buffer);
+extern bool DGUS_PopulateVP(const DGUS_Addr addr, DGUS_VP *const buffer);

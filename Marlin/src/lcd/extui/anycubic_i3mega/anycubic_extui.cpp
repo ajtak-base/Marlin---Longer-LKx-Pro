@@ -117,6 +117,8 @@ namespace ExtUI {
     }
   #endif
 
+  void onPauseMessage(PauseMessage message, PauseMode mode) {}
+
   void onSteppersDisabled() {}
   void onSteppersEnabled()  {}
 }
