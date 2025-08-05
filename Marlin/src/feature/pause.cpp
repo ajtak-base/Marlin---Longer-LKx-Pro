@@ -118,7 +118,7 @@ fil_change_settings_t fc_settings[EXTRUDERS];
         runout_beep++;
       }
     }
-}
+  }
   inline void first_impatient_beep(const int8_t max_beep_count) { impatient_beep(max_beep_count, true); }
 #else
   inline void impatient_beep(const int8_t, const bool=false) {}
@@ -156,16 +156,16 @@ static bool ensure_safe_temperature(const bool wait=true, const PauseMode mode=P
         idle();
     wait_for_heatup = false;
 
-#if ENABLED(PREVENT_COLD_EXTRUSION)
+  #if ENABLED(PREVENT_COLD_EXTRUSION)
     // A user can cancel wait-for-heating with M108
     if (!DEBUGGING(DRYRUN) && thermalManager.targetTooColdToExtrude(active_extruder))
     {
         SERIAL_ECHO_MSG(STR_ERR_HOTEND_TOO_COLD);
         return false;
     }
-#endif
+  #endif
 
-    return true;
+  return true;
 }
 
 /**
