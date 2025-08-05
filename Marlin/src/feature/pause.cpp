@@ -44,15 +44,15 @@
 #endif
 
 #if ENABLED(FWRETRACT)
-#include "fwretract.h"
+  #include "fwretract.h"
 #endif
 
 #if HAS_FILAMENT_SENSOR
-#include "runout.h"
+  #include "runout.h"
 #endif
 
 #if ENABLED(HOST_ACTION_COMMANDS)
-#include "host_actions.h"
+  #include "host_actions.h"
 #endif
 
 #if ENABLED(EXTENSIBLE_UI)
@@ -64,11 +64,11 @@
 #include "../lcd/marlinui.h"
 
 #if HAS_BUZZER
-#include "../libs/buzzer.h"
+  #include "../libs/buzzer.h"
 #endif
 
 #if ENABLED(POWER_LOSS_RECOVERY)
-#include "powerloss.h"
+  #include "powerloss.h"
 #endif
 
 #include "../libs/nozzle.h"
@@ -89,13 +89,13 @@ PauseMode pause_mode = PAUSE_MODE_PAUSE_PRINT;
 fil_change_settings_t fc_settings[EXTRUDERS];
 
 #if ENABLED(SDSUPPORT)
-#include "../sd/cardreader.h"
+  #include "../sd/cardreader.h"
 #endif
 
 #if ENABLED(EMERGENCY_PARSER)
-#define _PMSG(L) L##_M108
+  #define _PMSG(L) L##_M108
 #else
-#define _PMSG(L) L##_LCD
+  #define _PMSG(L) L##_LCD
 #endif
 
 #if HAS_BUZZER
