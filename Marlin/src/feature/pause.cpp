@@ -143,10 +143,8 @@ static bool ensure_safe_temperature(const bool wait=true, const PauseMode mode=P
       thermalManager.setTargetHotend(thermalManager.extrude_min_temp, active_extruder);
   #endif
 
-  ui.pause_show_message(PAUSE_MESSAGE_HEATING, mode);
+  ui.pause_show_message(PAUSE_MESSAGE_HEATING, mode); UNUSED(mode);
   TERN_(EXTENSIBLE_UI, ExtUI::onPauseMessage(PAUSE_MESSAGE_HEATING, mode));
-
-    UNUSED(mode);
 
   if (wait) return thermalManager.wait_for_hotend(active_extruder);
 
