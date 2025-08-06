@@ -541,14 +541,16 @@ void wait_for_confirmation(const bool is_reload/*=false*/, const int8_t max_beep
   while (wait_for_user) {
     impatient_beep(max_beep_count);
 
-        // Wait for the user to press the button to re-heat the nozzle, then
-        // re-heat the nozzle, re-show the continue prompt, restart idle timers, start over
-        if (nozzle_timed_out)
-        {
-            ui.pause_show_message(PAUSE_MESSAGE_HEAT);
-            TERN_(EXTENSIBLE_UI, ExtUI::onPauseMessage(PAUSE_MESSAGE_HEAT, PAUSE_MODE_SAME));
+    // If the nozzle has timed out...
+    if (!nozzle_timed_out)
+      HOTEND_LOOP() nozzle_timed_out |= thermalManager.heater_idle[e].timed_out;
 
-            SERIAL_ECHO_MSG(_PMSG(STR_FILAMENT_CHANGE_HEAT));
+    // Wait for the user to press the button to re-heat the nozzle, then
+    // re-heat the nozzle, re-show the continue prompt, restart idle timers, start over
+    if (nozzle_timed_out) {
+      ui.pause_show_message(PAUSE_MESSAGE_HEAT);
+      TERN_(EXTENSIBLE_UI, ExtUI::onPauseMessage(PAUSE_MESSAGE_HEAT, PAUSE_MODE_SAME));
+      SERIAL_ECHO_MSG(_PMSG(STR_FILAMENT_CHANGE_HEAT));
 
       TERN_(HOST_PROMPT_SUPPORT, hostui.prompt_do(PROMPT_USER_CONTINUE, GET_TEXT_F(MSG_HEATER_TIMEOUT), GET_TEXT_F(MSG_REHEAT)));
 
