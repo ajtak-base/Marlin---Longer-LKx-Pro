@@ -143,8 +143,10 @@ static bool ensure_safe_temperature(const bool wait=true, const PauseMode mode=P
       thermalManager.setTargetHotend(thermalManager.extrude_min_temp, active_extruder);
   #endif
 
-  ui.pause_show_message(PAUSE_MESSAGE_HEATING, mode); UNUSED(mode);
+  ui.pause_show_message(PAUSE_MESSAGE_HEATING, mode);
   TERN_(EXTENSIBLE_UI, ExtUI::onPauseMessage(PAUSE_MESSAGE_HEATING, mode));
+
+    UNUSED(mode);
 
   if (wait) return thermalManager.wait_for_hotend(active_extruder);
 
@@ -185,20 +187,19 @@ bool load_filament(const_float_t slow_load_length/*=0*/, const_float_t fast_load
   DEBUG_SECTION(lf, "load_filament", true);
   DEBUG_ECHOLNPGM("... slowlen:", slow_load_length, " fastlen:", fast_load_length, " purgelen:", purge_length, " maxbeep:", max_beep_count, " showlcd:", show_lcd, " pauseforuser:", pause_for_user, " pausemode:", mode DXC_SAY);
 
-    if (!ensure_safe_temperature(false, mode))
-    {
-        if (show_lcd)
-            ui.pause_show_message(PAUSE_MESSAGE_STATUS, mode);
-        TERN_(EXTENSIBLE_UI, ExtUI::onPauseMessage(PAUSE_MESSAGE_STATUS, mode));
+  if (!ensure_safe_temperature(false, mode)) {
+    if (show_lcd) ui.pause_show_message(PAUSE_MESSAGE_STATUS, mode);
+    TERN_(EXTENSIBLE_UI, ExtUI::onPauseMessage(PAUSE_MESSAGE_STATUS, mode));
+    return false;
+  }
 
-        return false;
-    }
+  if (pause_for_user) {
+    if (show_lcd) ui.pause_show_message(PAUSE_MESSAGE_INSERT, mode);
+    TERN_(EXTENSIBLE_UI, ExtUI::onPauseMessage(PAUSE_MESSAGE_INSERT, mode));
+    SERIAL_ECHO_MSG(_PMSG(STR_FILAMENT_CHANGE_INSERT));
 
-    if (pause_for_user) {
-      if (show_lcd)
-        ui.pause_show_message(PAUSE_MESSAGE_INSERT, mode);
-      TERN_(EXTENSIBLE_UI, ExtUI::onPauseMessage(PAUSE_MESSAGE_INSERT, mode));
-    
+    first_impatient_beep(max_beep_count);
+
     KEEPALIVE_STATE(PAUSED_FOR_USER);
     wait_for_user = true;    // LCD click or M108 will clear this
 
