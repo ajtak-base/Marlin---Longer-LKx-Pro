@@ -20,7 +20,7 @@
  *
  */
 
- /* DGUS implementation written by coldtobi in 2019 for Marlin */
+/* DGUS implementation written by coldtobi in 2019 for Marlin */
 
 #include "../../../inc/MarlinConfigPre.h"
 
@@ -67,8 +67,7 @@ void DGUSDisplay::Read(uint16_t addr, uint8_t size) {
 }
 
 void DGUSDisplay::Write(uint16_t addr, const void* data_ptr, uint8_t size) {
-  if (!data_ptr)
-    return;
+  if (!data_ptr) return;
 
   WriteHeader(addr, DGUS_WRITEVAR, size);
 
@@ -80,8 +79,7 @@ void DGUSDisplay::Write(uint16_t addr, const void* data_ptr, uint8_t size) {
 }
 
 void DGUSDisplay::WriteString(uint16_t addr, const void* data_ptr, uint8_t size, bool left, bool right, bool use_space) {
-  if (!data_ptr)
-    return;
+  if (!data_ptr) return;
 
   WriteHeader(addr, DGUS_WRITEVAR, size);
 
@@ -121,8 +119,7 @@ void DGUSDisplay::WriteString(uint16_t addr, const void* data_ptr, uint8_t size,
 }
 
 void DGUSDisplay::WriteStringPGM(uint16_t addr, const void* data_ptr, uint8_t size, bool left, bool right, bool use_space) {
-  if (!data_ptr)
-    return;
+  if (!data_ptr) return;
 
   WriteHeader(addr, DGUS_WRITEVAR, size);
 
@@ -225,64 +222,64 @@ void DGUSDisplay::SetVolume(uint8_t new_volume) {
 
 void DGUSDisplay::ProcessRx() {
 
-#if ENABLED(LCD_SERIAL_STATS_RX_BUFFER_OVERRUNS)
-  if (!LCD_SERIAL.available() && LCD_SERIAL.buffer_overruns()) {
-    // Overrun, but reset the flag only when the buffer is empty
-    // We want to extract as many as valid datagrams possible...
-    DEBUG_ECHOPGM("OVFL");
-    rx_datagram_state = DGUS_IDLE;
-    //LCD_SERIAL.reset_rx_overun();
-    LCD_SERIAL.flush();
-  }
-#endif
+  #if ENABLED(LCD_SERIAL_STATS_RX_BUFFER_OVERRUNS)
+    if (!LCD_SERIAL.available() && LCD_SERIAL.buffer_overruns()) {
+      // Overrun, but reset the flag only when the buffer is empty
+      // We want to extract as many as valid datagrams possible...
+      DEBUG_ECHOPGM("OVFL");
+      rx_datagram_state = DGUS_IDLE;
+      //LCD_SERIAL.reset_rx_overun();
+      LCD_SERIAL.flush();
+    }
+  #endif
 
   uint8_t receivedbyte;
   while (LCD_SERIAL.available()) {
     switch (rx_datagram_state) {
 
-    case DGUS_IDLE: // Waiting for the first header byte
-      receivedbyte = LCD_SERIAL.read();
+      case DGUS_IDLE: // Waiting for the first header byte
+        receivedbyte = LCD_SERIAL.read();
         DEBUG_ECHOPAIR_F("< ", receivedbyte);
         if (DGUS_HEADER1 == receivedbyte) rx_datagram_state = DGUS_HEADER1_SEEN;
-      break;
+        break;
 
-    case DGUS_HEADER1_SEEN: // Waiting for the second header byte
-      receivedbyte = LCD_SERIAL.read();
+      case DGUS_HEADER1_SEEN: // Waiting for the second header byte
+        receivedbyte = LCD_SERIAL.read();
         DEBUG_ECHOPAIR_F(" ", receivedbyte);
-      rx_datagram_state = (DGUS_HEADER2 == receivedbyte) ? DGUS_HEADER2_SEEN : DGUS_IDLE;
-      break;
+        rx_datagram_state = (DGUS_HEADER2 == receivedbyte) ? DGUS_HEADER2_SEEN : DGUS_IDLE;
+        break;
 
-    case DGUS_HEADER2_SEEN: // Waiting for the length byte
-      rx_datagram_len = LCD_SERIAL.read();
+      case DGUS_HEADER2_SEEN: // Waiting for the length byte
+        rx_datagram_len = LCD_SERIAL.read();
         DEBUG_ECHOPAIR_F(" (", rx_datagram_len, ") ");
 
-      // Telegram min len is 3 (command and one word of payload)
-      rx_datagram_state = WITHIN(rx_datagram_len, 3, DGUS_RX_BUFFER_SIZE) ? DGUS_WAIT_TELEGRAM : DGUS_IDLE;
-      break;
+        // Telegram min len is 3 (command and one word of payload)
+        rx_datagram_state = WITHIN(rx_datagram_len, 3, DGUS_RX_BUFFER_SIZE) ? DGUS_WAIT_TELEGRAM : DGUS_IDLE;
+        break;
 
-    case DGUS_WAIT_TELEGRAM: // wait for complete datagram to arrive.
+      case DGUS_WAIT_TELEGRAM: // wait for complete datagram to arrive.
         if (LCD_SERIAL.available() < rx_datagram_len) return;
 
-      initialized = true; // We've talked to it, so we defined it as initialized.
-      uint8_t command = LCD_SERIAL.read();
+        initialized = true; // We've talked to it, so we defined it as initialized.
+        uint8_t command = LCD_SERIAL.read();
 
         DEBUG_ECHOPAIR_F("# ", command);
 
-      uint8_t readlen = rx_datagram_len - 1; // command is part of len.
-      unsigned char tmp[rx_datagram_len - 1];
+        uint8_t readlen = rx_datagram_len - 1;  // command is part of len.
+        unsigned char tmp[rx_datagram_len - 1];
         unsigned char *ptmp = tmp;
 
-      while (readlen--) {
-        receivedbyte = LCD_SERIAL.read();
+        while (readlen--) {
+          receivedbyte = LCD_SERIAL.read();
           DEBUG_ECHOPAIR_F(" ", receivedbyte);
-        *ptmp++ = receivedbyte;
+          *ptmp++ = receivedbyte;
       }
-      DEBUG_ECHOPGM(" # ");
+        DEBUG_ECHOPGM(" # ");
       // mostly we'll get this: 5A A5 03 82 4F 4B -- ACK on 0x82, so discard it.
       if (command == DGUS_WRITEVAR && 'O' == tmp[0] && 'K' == tmp[1]) {
         DEBUG_ECHOLNPGM(">");
         rx_datagram_state = DGUS_IDLE;
-        break;
+          break;
       }
 
       /* AutoUpload, (and answer to) Command 0x83 :
@@ -318,30 +315,27 @@ void DGUSDisplay::ProcessRx() {
           break;
         }
 
-        gcode.reset_stepper_timeout();
+          gcode.reset_stepper_timeout();
 
         if (!vp.size) {
           DEBUG_ECHOLN();
           vp.rx_handler(vp, nullptr);
 
-          rx_datagram_state = DGUS_IDLE;
-          break;
-        }
+            rx_datagram_state = DGUS_IDLE;
+            break;
+          }
 
-        if (vp.flags & VPFLAG_RXSTRING) {
-          unsigned char buffer[vp.size];
-          memset(buffer, 0, vp.size);
+          if (vp.flags & VPFLAG_RXSTRING) {
+            unsigned char buffer[vp.size];
+            memset(buffer, 0, vp.size);
 
-          for (uint8_t i = 0; i < dlen; i++) {
-            if (i >= vp.size) {
-              break;
-            }
+            for (uint8_t i = 0; i < dlen; i++) {
+              if (i >= vp.size) break;
 
-            if (i + 1 < dlen && tmp[i + 3] == 0xFF && tmp[i + 4] == 0xFF) {
-              break;
-            }
+              if (i + 1 < dlen && tmp[i + 3] == 0xFF && tmp[i + 4] == 0xFF)
+                break;
 
-            buffer[i] = tmp[i + 3];
+              buffer[i] = tmp[i + 3];
           }
 
           DEBUG_ECHOLN();
@@ -373,18 +367,18 @@ void DGUSDisplay::ProcessRx() {
 
 size_t DGUSDisplay::GetFreeTxBuffer() {
   #ifdef LCD_SERIAL_GET_TX_BUFFER_FREE
-  return LCD_SERIAL_GET_TX_BUFFER_FREE();
+    return LCD_SERIAL_GET_TX_BUFFER_FREE();
   #else
-  return SIZE_MAX;
+    return SIZE_MAX;
   #endif
 }
 
 void DGUSDisplay::FlushTx() {
-#ifdef ARDUINO_ARCH_STM32
-  LCD_SERIAL.flush();
-#else
-  LCD_SERIAL.flushTX();
-#endif
+  #ifdef ARDUINO_ARCH_STM32
+    LCD_SERIAL.flush();
+  #else
+    LCD_SERIAL.flushTX();
+  #endif
 }
 
 void DGUSDisplay::WriteHeader(uint16_t addr, uint8_t command, uint8_t len) {
@@ -396,8 +390,8 @@ void DGUSDisplay::WriteHeader(uint16_t addr, uint8_t command, uint8_t len) {
   LCD_SERIAL.write(addr & 0xFF);
 }
 
-bool DGUS_PopulateVP(const DGUS_Addr addr, DGUS_VP* const buffer) {
-  const DGUS_VP* ret = vp_list;
+bool DGUS_PopulateVP(const DGUS_Addr addr, DGUS_VP * const buffer) {
+  const DGUS_VP *ret = vp_list;
 
   do {
     const uint16_t addrcheck = pgm_read_word(&ret->addr);
