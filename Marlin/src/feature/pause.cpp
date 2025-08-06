@@ -143,10 +143,8 @@ static bool ensure_safe_temperature(const bool wait=true, const PauseMode mode=P
       thermalManager.setTargetHotend(thermalManager.extrude_min_temp, active_extruder);
   #endif
 
-  ui.pause_show_message(PAUSE_MESSAGE_HEATING, mode);
+  ui.pause_show_message(PAUSE_MESSAGE_HEATING, mode); UNUSED(mode);
   TERN_(EXTENSIBLE_UI, ExtUI::onPauseMessage(PAUSE_MESSAGE_HEATING, mode));
-
-    UNUSED(mode);
 
   if (wait) return thermalManager.wait_for_hotend(active_extruder);
 
@@ -275,6 +273,7 @@ bool load_filament(const_float_t slow_load_length/*=0*/, const_float_t fast_load
       if (purge_length > 0) {
         // "Wait for filament purge"
         if (show_lcd) ui.pause_show_message(PAUSE_MESSAGE_PURGE);
+        
         TERN_(EXTENSIBLE_UI, ExtUI::onPauseMessage(PAUSE_MESSAGE_PURGE, PAUSE_MODE_SAME));
         // Extrude filament to get into hotend
         unscaled_e_move(purge_length, ADVANCED_PAUSE_PURGE_FEEDRATE);
