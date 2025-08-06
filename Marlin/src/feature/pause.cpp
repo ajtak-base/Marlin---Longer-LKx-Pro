@@ -274,7 +274,7 @@ bool load_filament(const_float_t slow_load_length/*=0*/, const_float_t fast_load
       if (purge_length > 0) {
         // "Wait for filament purge"
         if (show_lcd) ui.pause_show_message(PAUSE_MESSAGE_PURGE);
-        
+
         TERN_(EXTENSIBLE_UI, ExtUI::onPauseMessage(PAUSE_MESSAGE_PURGE, PAUSE_MODE_SAME));
         // Extrude filament to get into hotend
         unscaled_e_move(purge_length, ADVANCED_PAUSE_PURGE_FEEDRATE);
