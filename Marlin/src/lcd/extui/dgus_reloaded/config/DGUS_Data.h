@@ -121,7 +121,7 @@ namespace DGUS_Data {
     DOWN    = 1U << 2
   };
 
-  enum class StatusIcon : uint16_t     {
+  enum class StatusIcon : uint16_t {
     PAUSE = 2,
     RESUME = 1
   };
