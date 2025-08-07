@@ -69,7 +69,7 @@
 // @section info
 
 // Author info of this build printed to the host during boot and M115
-#define STRING_CONFIG_H_AUTHOR "(Guizz27, LKXpro)" // Who made the changes.
+#define STRING_CONFIG_H_AUTHOR "(Jafr, Guizz27, LKXpro)" // Who made the changes.
 //#define CUSTOM_VERSION_FILE Version.h // Path from the root directory (no quotes)
 
 /**
@@ -1498,11 +1498,11 @@
 // @section extruder
 
 // For direct drive extruder v9 set to true, for geared extruder set to false.
-#define INVERT_E0_DIR true //  For Alphawise and Longer U30 pro LK4 pro
+//#define INVERT_E0_DIR true //  For Alphawise and Longer U30 pro LK4 pro
 #ifdef LK1_Pro
 #define INVERT_E0_DIR false
 #else
-#define INVERT_E0_DIR true
+#define INVERT_E0_DIR false
 #endif
 
 #define INVERT_E1_DIR false
