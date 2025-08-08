@@ -60,7 +60,7 @@ public:
     static void SDCardRemoved();
     /// Marlin informed us about a bad SD Card.
     static void SDCardError();
-#endif
+  #endif
 
   #if ENABLED(POWER_LOSS_RECOVERY)
     static void PowerLossResume();
