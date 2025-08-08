@@ -33,144 +33,143 @@
 #include "../../../module/stepper.h"
 #include "../../../module/printcounter.h"
 #if ENABLED(ADVANCED_PAUSE_FEATURE)
-#include "../../../feature/pause.h"
+  #include "../../../feature/pause.h"
 #endif
 
 #if ENABLED(SDSUPPORT)
-void DGUSTxHandler::SetFileControlState(int file, bool state) {
-  DGUS_Control control;
+  void DGUSTxHandler::SetFileControlState(int file, bool state) {
+    DGUS_Control control;
 
-  switch (file)     {
-  default:
-    return;
-  case 0:
-    control = DGUS_Control::FILE0;
-    break;
-  case 1:
-    control = DGUS_Control::FILE1;
-    break;
-  case 2:
-    control = DGUS_Control::FILE2;
-    break;
-  case 3:
-    control = DGUS_Control::FILE3;
-    break;
-  case 4:
-    control = DGUS_Control::FILE4;
-    break;
-  }
-
-  if (state)     {
-    dgus_display.EnableControl(DGUS_Screen::PRINT,
-      DGUSDisplay::RETURN_KEY_CODE,
-      control);
-  }
-  else     {
-    dgus_display.DisableControl(DGUS_Screen::PRINT,
-      DGUSDisplay::RETURN_KEY_CODE,
-      control);
-  }
-}
-
-void DGUSTxHandler::FileType(DGUS_VP& vp) {
-  // Batch send
-  uint16_t data[DGUS_FILE_COUNT];
-
-  for (int i = 0; i < DGUS_FILE_COUNT; i++)     {
-    if (!dgus_screen_handler.filelist.seek(dgus_screen_handler.filelist_offset + i))         {
-      data[i] = Swap16((uint16_t)DGUS_Data::SDType::NONE);
-
-      SetFileControlState(i, false);
-      continue;
+    switch (file) {
+      default: return;
+      case 0:
+        control = DGUS_Control::FILE0;
+        break;
+      case 1:
+        control = DGUS_Control::FILE1;
+        break;
+      case 2:
+        control = DGUS_Control::FILE2;
+        break;
+      case 3:
+        control = DGUS_Control::FILE3;
+        break;
+      case 4:
+        control = DGUS_Control::FILE4;
+        break;
     }
 
-    data[i] = dgus_screen_handler.filelist.isDir() ? Swap16((uint16_t)DGUS_Data::SDType::DIRECTORY)
-      : Swap16((uint16_t)DGUS_Data::SDType::FILE);
-
-    SetFileControlState(i, true);
-  }
-
-  dgus_display.Write((uint16_t)vp.addr, data, sizeof(*data) * DGUS_FILE_COUNT);
-}
-
-void DGUSTxHandler::FileName(DGUS_VP& vp) {
-  uint8_t offset;
-
-  switch (vp.addr)     {
-  default:
-    return;
-  case DGUS_Addr::SD_FileName0:
-    offset = 0;
-    break;
-  case DGUS_Addr::SD_FileName1:
-    offset = 1;
-    break;
-  case DGUS_Addr::SD_FileName2:
-    offset = 2;
-    break;
-  case DGUS_Addr::SD_FileName3:
-    offset = 3;
-    break;
-  case DGUS_Addr::SD_FileName4:
-    offset = 4;
-    break;
-  }
-
-  if (dgus_screen_handler.filelist.seek(dgus_screen_handler.filelist_offset + offset))     {
-    dgus_display.WriteString((uint16_t)vp.addr, dgus_screen_handler.filelist.filename(), vp.size);
-  }
-  else     {
-    dgus_display.WriteStringPGM((uint16_t)vp.addr, NUL_STR, vp.size);
+    if (state) {
+      dgus_display.EnableControl(DGUS_Screen::PRINT,
+                                 DGUSDisplay::RETURN_KEY_CODE,
+                                 control);
+    }
+    else {
+      dgus_display.DisableControl(DGUS_Screen::PRINT,
+                                  DGUSDisplay::RETURN_KEY_CODE,
+                                  control);
   }
 }
 
-void DGUSTxHandler::ScrollIcons(DGUS_VP& vp) {
-  uint16_t icons = 0;
+  void DGUSTxHandler::FileType(DGUS_VP &vp) {
+    // Batch send
+    uint16_t data[DGUS_FILE_COUNT];
 
-  if (!dgus_screen_handler.filelist.isAtRootDir())     {
-    icons |= (uint16_t)DGUS_Data::ScrollIcon::GO_BACK;
+    for (int i = 0; i < DGUS_FILE_COUNT; i++) {
+      if (!dgus_screen_handler.filelist.seek(dgus_screen_handler.filelist_offset + i)) {
+        data[i] = Swap16((uint16_t)DGUS_Data::SDType::NONE);
 
-    dgus_display.EnableControl(DGUS_Screen::PRINT,
-      DGUSDisplay::RETURN_KEY_CODE,
-      DGUS_Control::GO_BACK);
-  }
-  else     {
-    dgus_display.DisableControl(DGUS_Screen::PRINT,
-      DGUSDisplay::RETURN_KEY_CODE,
-      DGUS_Control::GO_BACK);
-  }
+        SetFileControlState(i, false);
+        continue;
+      }
 
-  if (dgus_screen_handler.filelist_offset > 0)     {
-    icons |= (uint16_t)DGUS_Data::ScrollIcon::UP;
+      data[i] = dgus_screen_handler.filelist.isDir() ?
+                  Swap16((uint16_t)DGUS_Data::SDType::DIRECTORY)
+                : Swap16((uint16_t)DGUS_Data::SDType::FILE);
 
-    dgus_display.EnableControl(DGUS_Screen::PRINT,
-      DGUSDisplay::RETURN_KEY_CODE,
-      DGUS_Control::SCROLL_UP);
-  }
-  else     {
-    dgus_display.DisableControl(DGUS_Screen::PRINT,
-      DGUSDisplay::RETURN_KEY_CODE,
-      DGUS_Control::SCROLL_UP);
+      SetFileControlState(i, true);
+    }
+
+    dgus_display.Write((uint16_t)vp.addr, data, sizeof(*data) * DGUS_FILE_COUNT);
   }
 
-  if (dgus_screen_handler.filelist_offset + DGUS_FILE_COUNT < dgus_screen_handler.filelist.count())     {
-    icons |= (uint16_t)DGUS_Data::ScrollIcon::DOWN;
+  void DGUSTxHandler::FileName(DGUS_VP &vp) {
+    uint8_t offset;
 
-    dgus_display.EnableControl(DGUS_Screen::PRINT,
-      DGUSDisplay::RETURN_KEY_CODE,
-      DGUS_Control::SCROLL_DOWN);
+    switch (vp.addr) {
+      default: return;
+      case DGUS_Addr::SD_FileName0:
+        offset = 0;
+        break;
+      case DGUS_Addr::SD_FileName1:
+        offset = 1;
+        break;
+      case DGUS_Addr::SD_FileName2:
+        offset = 2;
+        break;
+      case DGUS_Addr::SD_FileName3:
+        offset = 3;
+        break;
+      case DGUS_Addr::SD_FileName4:
+        offset = 4;
+        break;
+    }
+
+    if (dgus_screen_handler.filelist.seek(dgus_screen_handler.filelist_offset + offset)) {
+      dgus_display.WriteString((uint16_t)vp.addr, dgus_screen_handler.filelist.filename(), vp.size);
+    }
+    else {
+      dgus_display.WriteStringPGM((uint16_t)vp.addr, NUL_STR, vp.size);
+    }
   }
-  else     {
-    dgus_display.DisableControl(DGUS_Screen::PRINT,
-      DGUSDisplay::RETURN_KEY_CODE,
-      DGUS_Control::SCROLL_DOWN);
+
+  void DGUSTxHandler::ScrollIcons(DGUS_VP &vp) {
+    uint16_t icons = 0;
+
+    if (!dgus_screen_handler.filelist.isAtRootDir()) {
+      icons |= (uint16_t)DGUS_Data::ScrollIcon::GO_BACK;
+
+      dgus_display.EnableControl(DGUS_Screen::PRINT,
+                                 DGUSDisplay::RETURN_KEY_CODE,
+                                 DGUS_Control::GO_BACK);
+    }
+    else {
+      dgus_display.DisableControl(DGUS_Screen::PRINT,
+                                  DGUSDisplay::RETURN_KEY_CODE,
+                                  DGUS_Control::GO_BACK);
+    }
+
+    if (dgus_screen_handler.filelist_offset > 0) {
+      icons |= (uint16_t)DGUS_Data::ScrollIcon::UP;
+
+      dgus_display.EnableControl(DGUS_Screen::PRINT,
+                                 DGUSDisplay::RETURN_KEY_CODE,
+                                 DGUS_Control::SCROLL_UP);
+    }
+    else {
+      dgus_display.DisableControl(DGUS_Screen::PRINT,
+                                  DGUSDisplay::RETURN_KEY_CODE,
+                                  DGUS_Control::SCROLL_UP);
+    }
+
+    if (dgus_screen_handler.filelist_offset + DGUS_FILE_COUNT < dgus_screen_handler.filelist.count()) {
+      icons |= (uint16_t)DGUS_Data::ScrollIcon::DOWN;
+
+      dgus_display.EnableControl(DGUS_Screen::PRINT,
+                                 DGUSDisplay::RETURN_KEY_CODE,
+                                 DGUS_Control::SCROLL_DOWN);
+    }
+    else {
+      dgus_display.DisableControl(DGUS_Screen::PRINT,
+                                  DGUSDisplay::RETURN_KEY_CODE,
+                                  DGUS_Control::SCROLL_DOWN);
+    }
+
+    dgus_display.Write((uint16_t)vp.addr, Swap16(icons));
   }
 
-  dgus_display.Write((uint16_t)vp.addr, Swap16(icons));
-}
-
-void DGUSTxHandler::SelectedFileName(DGUS_VP& vp) {
-  if (dgus_screen_handler.filelist_selected < 0 || !dgus_screen_handler.filelist.seek(dgus_screen_handler.filelist_selected))     {
+  void DGUSTxHandler::SelectedFileName(DGUS_VP &vp) {
+    if (dgus_screen_handler.filelist_selected < 0 || !dgus_screen_handler.filelist.seek(dgus_screen_handler.filelist_selected)) {
     dgus_display.WriteStringPGM((uint16_t)vp.addr, NUL_STR, vp.size);
     return;
   }
@@ -188,7 +187,7 @@ void DGUSTxHandler::SelectedFileNameFormat(DGUS_VP& vp) {
 }
 #endif // SDSUPPORT
 
-void DGUSTxHandler::PositionZ(DGUS_VP& vp) {
+void DGUSTxHandler::PositionZ(DGUS_VP &vp) {
   DEBUG_ECHOLNPGM("posz getaxis ", planner.get_axis_position_mm(Z_AXIS), " current ", current_position.z, " planner ", planner.position.z);
   float position = ExtUI::isAxisPositionKnown(ExtUI::Z) ? current_position.z : 0;
   //planner.get_axis_position_mm(Z_AXIS)
@@ -197,31 +196,30 @@ void DGUSTxHandler::PositionZ(DGUS_VP& vp) {
   dgus_display.Write((uint16_t)vp.addr, dgus_display.SwapBytes(data));
 }
 
-void DGUSTxHandler::Ellapsed(DGUS_VP& vp) {
+void DGUSTxHandler::Ellapsed(DGUS_VP &vp) {
   char buffer[21];
   duration_t(print_job_timer.duration()).toString(buffer);
 
   dgus_display.WriteString((uint16_t)vp.addr, buffer, vp.size);
 }
 
-void DGUSTxHandler::Percent(DGUS_VP& vp) {
+void DGUSTxHandler::Percent(DGUS_VP &vp) {
   uint16_t progress;
 
-  switch (vp.addr)     {
-  default:
-    return;
-  case DGUS_Addr::STATUS_Percent:
-    progress = constrain(ExtUI::getProgress_percent(), 0, 100);
-    break;
-  case DGUS_Addr::STATUS_Percent_Complete:
-    progress = 100;
-    break;
+  switch (vp.addr) {
+    default: return;
+    case DGUS_Addr::STATUS_Percent:
+      progress = constrain(ExtUI::getProgress_percent(), 0, 100);
+      break;
+    case DGUS_Addr::STATUS_Percent_Complete:
+      progress = 100;
+      break;
   }
 
   dgus_display.Write((uint16_t)DGUS_Addr::STATUS_Percent, Swap16(progress));
 }
 
-void DGUSTxHandler::StatusIcons(DGUS_VP& vp) {
+void DGUSTxHandler::StatusIcons(DGUS_VP &vp) {
   uint16_t icon = (uint16_t)DGUS_Data::StatusIcon::RESUME;
   if (printingIsActive())     {
     icon = (uint16_t)DGUS_Data::StatusIcon::PAUSE;
@@ -259,33 +257,32 @@ void DGUSTxHandler::StatusIcons(DGUS_VP& vp) {
   // dgus_display.Write((uint16_t)vp.addr, Swap16(icons));
 }
 
-void DGUSTxHandler::Flowrate(DGUS_VP& vp) {
+void DGUSTxHandler::Flowrate(DGUS_VP &vp) {
   int16_t flowrate;
 
-  switch (vp.addr)     {
-  default:
-    return;
-  case DGUS_Addr::ADJUST_Flowrate_CUR:
-  #if EXTRUDERS > 1
-    flowrate = ExtUI::getFlow_percent(ExtUI::getActiveTool());
-  #else
-    flowrate = ExtUI::getFlow_percent(ExtUI::E0);
-  #endif
+  switch (vp.addr) {
+    default: return;
+    case DGUS_Addr::ADJUST_Flowrate_CUR:
+    #if HAS_MULTI_EXTRUDER
+      flowrate = ExtUI::getFlow_percent(ExtUI::getActiveTool());
+    #else
+      flowrate = ExtUI::getFlow_percent(ExtUI::E0);
+    #endif
     break;
-  #if EXTRUDERS > 1
-  case DGUS_Addr::ADJUST_Flowrate_E0:
-    flowrate = ExtUI::getFlow_percent(ExtUI::E0);
-    break;
-  case DGUS_Addr::ADJUST_Flowrate_E1:
-    flowrate = ExtUI::getFlow_percent(ExtUI::E1);
-    break;
-  #endif
+    #if HAS_MULTI_EXTRUDER
+      case DGUS_Addr::ADJUST_Flowrate_E0:
+        flowrate = ExtUI::getFlow_percent(ExtUI::E0);
+        break;
+      case DGUS_Addr::ADJUST_Flowrate_E1:
+        flowrate = ExtUI::getFlow_percent(ExtUI::E1);
+        break;
+    #endif
   }
 
   dgus_display.Write((uint16_t)vp.addr, Swap16(flowrate));
 }
 
-void DGUSTxHandler::TempMax(DGUS_VP& vp) {
+void DGUSTxHandler::TempMax(DGUS_VP &vp) {
   uint16_t temp;
 
   switch (vp.addr) {
@@ -311,52 +308,51 @@ void DGUSTxHandler::StepperStatus(DGUS_VP &vp) {
   dgus_display.Write((uint16_t)vp.addr, Swap16(uint16_t(motor_on ? DGUS_Data::Status::ENABLED : DGUS_Data::Status::DISABLED)));
 }
 
-void DGUSTxHandler::StepIcons(DGUS_VP& vp) {
-  if (!vp.extra)
-    return;
+void DGUSTxHandler::StepIcons(DGUS_VP &vp) {
+  if (!vp.extra) return;
   uint16_t icons = 0;
   DGUS_Data::StepSize size = *(DGUS_Data::StepSize*)vp.extra;
 
-  switch (size)     {
-  case DGUS_Data::StepSize::MM10:
-    icons |= (uint16_t)DGUS_Data::StepIcon::MM10;
-    break;
-  case DGUS_Data::StepSize::MM1:
-    icons |= (uint16_t)DGUS_Data::StepIcon::MM1;
-    break;
-  case DGUS_Data::StepSize::MMP1:
-    icons |= (uint16_t)DGUS_Data::StepIcon::MMP1;
-    break;
-  case DGUS_Data::StepSize::MMP01:
-    icons |= (uint16_t)DGUS_Data::StepIcon::MMP01;
-    break;
+  switch (size) {
+    case DGUS_Data::StepSize::MM10:
+      icons |= (uint16_t)DGUS_Data::StepIcon::MM10;
+      break;
+    case DGUS_Data::StepSize::MM1:
+      icons |= (uint16_t)DGUS_Data::StepIcon::MM1;
+      break;
+    case DGUS_Data::StepSize::MMP1:
+      icons |= (uint16_t)DGUS_Data::StepIcon::MMP1;
+      break;
+    case DGUS_Data::StepSize::MMP01:
+      icons |= (uint16_t)DGUS_Data::StepIcon::MMP01;
+      break;
   }
 
   dgus_display.Write((uint16_t)vp.addr, Swap16(icons));
 }
 #if HAS_LEVELING
-void DGUSTxHandler::ABLDisableIcon(DGUS_VP& vp) {
+void DGUSTxHandler::ABLDisableIcon(DGUS_VP &vp) {
   uint16_t data;
 
-  if (ExtUI::getLevelingActive())     {
+  if (ExtUI::getLevelingActive()) {
     data = (uint16_t)DGUS_Data::Status::ENABLED;
 
     dgus_display.EnableControl(DGUS_Screen::LEVELING_AUTOMATIC,
-      DGUSDisplay::RETURN_KEY_CODE,
-      DGUS_Control::DISABLE);
+                               DGUSDisplay::RETURN_KEY_CODE,
+                               DGUS_Control::DISABLE);
   }
-  else     {
+  else {
     data = (uint16_t)DGUS_Data::Status::DISABLED;
 
     dgus_display.DisableControl(DGUS_Screen::LEVELING_AUTOMATIC,
-      DGUSDisplay::RETURN_KEY_CODE,
-      DGUS_Control::DISABLE);
+                                DGUSDisplay::RETURN_KEY_CODE,
+                                DGUS_Control::DISABLE);
   }
 
   dgus_display.Write((uint16_t)vp.addr, Swap16(data));
 }
 
-void DGUSTxHandler::ABLGrid(DGUS_VP& vp) {
+void DGUSTxHandler::ABLGrid(DGUS_VP &vp) {
   // Batch send
   int16_t data[DGUS_LEVEL_GRID_SIZE];
   xy_uint8_t point;
@@ -373,7 +369,7 @@ void DGUSTxHandler::ABLGrid(DGUS_VP& vp) {
   dgus_display.Write((uint16_t)vp.addr, data, sizeof(*data) * DGUS_LEVEL_GRID_SIZE);
 }
 
-void DGUSTxHandler::ABLGridColor(DGUS_VP& vp) {
+void DGUSTxHandler::ABLGridColor(DGUS_VP &vp) {
   // Set color for each value
   for (int point = 0; point < DGUS_LEVEL_GRID_SIZE; point++)     {
     uint16_t color = Swap16(COLOR_WHITE);
@@ -385,74 +381,71 @@ void DGUSTxHandler::ABLGridColor(DGUS_VP& vp) {
 }
 #endif
 
-void DGUSTxHandler::FilamentIcons(DGUS_VP& vp) {
+void DGUSTxHandler::FilamentIcons(DGUS_VP &vp) {
   uint16_t icons = 0;
 
-  switch (dgus_screen_handler.filament_extruder)     {
-  default:
-    return;
-  case DGUS_Data::Extruder::CURRENT:
-  #if EXTRUDERS > 1
-    switch (ExtUI::getActiveTool())         {
-    default:
-      break;
-    case ExtUI::E0:
+  switch (dgus_screen_handler.filament_extruder) {
+    default: return;
+    case DGUS_Data::Extruder::CURRENT:
+      #if HAS_MULTI_EXTRUDER
+        switch (ExtUI::getActiveTool()) {
+          default: break;
+          case ExtUI::E0:
+            icons |= (uint16_t)DGUS_Data::ExtruderIcon::E0;
+            break;
+          case ExtUI::E1:
+            icons |= (uint16_t)DGUS_Data::ExtruderIcon::E1;
+            break;
+        }
+        break;
+      #endif
+    case DGUS_Data::Extruder::E0:
       icons |= (uint16_t)DGUS_Data::ExtruderIcon::E0;
       break;
-    case ExtUI::E1:
+    case DGUS_Data::Extruder::E1:
       icons |= (uint16_t)DGUS_Data::ExtruderIcon::E1;
       break;
-    }
-    break;
-  #endif
-  case DGUS_Data::Extruder::E0:
-    icons |= (uint16_t)DGUS_Data::ExtruderIcon::E0;
-    break;
-  case DGUS_Data::Extruder::E1:
-    icons |= (uint16_t)DGUS_Data::ExtruderIcon::E1;
-    break;
   }
 
   dgus_display.Write((uint16_t)vp.addr, Swap16(icons));
 }
 
-void DGUSTxHandler::BLTouch(DGUS_VP& vp) {
-#if ENABLED(BLTOUCH)
-  dgus_display.EnableControl(DGUS_Screen::SETTINGS_MENU2,
-    DGUSDisplay::RETURN_KEY_CODE,
-    DGUS_Control::EXTRA2);
+void DGUSTxHandler::BLTouch(DGUS_VP &vp) {
+  #if ENABLED(BLTOUCH)
+    dgus_display.EnableControl(DGUS_Screen::SETTINGS_MENU2,
+                               DGUSDisplay::RETURN_KEY_CODE,
+                               DGUS_Control::EXTRA2);
 
-  dgus_display.Write((uint16_t)vp.addr, Swap16((uint16_t)DGUS_Data::Status::ENABLED));
-#else
-  dgus_display.DisableControl(DGUS_Screen::SETTINGS_MENU2,
-    DGUSDisplay::RETURN_KEY_CODE,
-    DGUS_Control::EXTRA2);
+    dgus_display.Write((uint16_t)vp.addr, Swap16((uint16_t)DGUS_Data::Status::ENABLED));
+  #else
+    dgus_display.DisableControl(DGUS_Screen::SETTINGS_MENU2,
+                                DGUSDisplay::RETURN_KEY_CODE,
+                                DGUS_Control::EXTRA2);
 
-  dgus_display.Write((uint16_t)vp.addr, Swap16((uint16_t)DGUS_Data::Status::DISABLED));
-#endif
+    dgus_display.Write((uint16_t)vp.addr, Swap16((uint16_t)DGUS_Data::Status::DISABLED));
+  #endif
 }
 
-void DGUSTxHandler::PIDIcons(DGUS_VP& vp) {
+void DGUSTxHandler::PIDIcons(DGUS_VP &vp) {
   uint16_t icons = 0;
 
-  switch (dgus_screen_handler.pid_heater)     {
-  default:
-    return;
-  case DGUS_Data::Heater::BED:
-    icons |= (uint16_t)DGUS_Data::HeaterIcon::BED;
-    break;
-  case DGUS_Data::Heater::H0:
-    icons |= (uint16_t)DGUS_Data::HeaterIcon::H0;
-    break;
-  case DGUS_Data::Heater::H1:
-    icons |= (uint16_t)DGUS_Data::HeaterIcon::H1;
-    break;
+  switch (dgus_screen_handler.pid_heater) {
+    default: return;
+    case DGUS_Data::Heater::BED:
+      icons |= (uint16_t)DGUS_Data::HeaterIcon::BED;
+      break;
+    case DGUS_Data::Heater::H0:
+      icons |= (uint16_t)DGUS_Data::HeaterIcon::H0;
+      break;
+    case DGUS_Data::Heater::H1:
+      icons |= (uint16_t)DGUS_Data::HeaterIcon::H1;
+      break;
   }
 
   dgus_display.Write((uint16_t)vp.addr, Swap16(icons));
 }
 
-void DGUSTxHandler::PIDKp(DGUS_VP& vp) {
+void DGUSTxHandler::PIDKp(DGUS_VP &vp) {
   float value;
 
   switch (dgus_screen_handler.pid_heater) {
@@ -478,7 +471,7 @@ void DGUSTxHandler::PIDKp(DGUS_VP& vp) {
   dgus_display.Write((uint16_t)vp.addr, dgus_display.SwapBytes(data));
 }
 
-void DGUSTxHandler::PIDKi(DGUS_VP& vp) {
+void DGUSTxHandler::PIDKi(DGUS_VP &vp) {
   float value;
 
   switch (dgus_screen_handler.pid_heater) {
@@ -504,7 +497,7 @@ void DGUSTxHandler::PIDKi(DGUS_VP& vp) {
   dgus_display.Write((uint16_t)vp.addr, dgus_display.SwapBytes(data));
 }
 
-void DGUSTxHandler::PIDKd(DGUS_VP& vp) {
+void DGUSTxHandler::PIDKd(DGUS_VP &vp) {
   float value;
 
   switch (dgus_screen_handler.pid_heater) {
@@ -530,63 +523,63 @@ void DGUSTxHandler::PIDKd(DGUS_VP& vp) {
   dgus_display.Write((uint16_t)vp.addr, dgus_display.SwapBytes(data));
 }
 
-void DGUSTxHandler::BuildVolume(DGUS_VP& vp) {
+void DGUSTxHandler::BuildVolume(DGUS_VP &vp) {
   char buffer[vp.size];
   snprintf_P(buffer, vp.size, PSTR("%dx%dx%d"), X_BED_SIZE, Y_BED_SIZE, (Z_MAX_POS - Z_MIN_POS));
 
   dgus_display.WriteString((uint16_t)vp.addr, buffer, vp.size);
 }
 
-void DGUSTxHandler::TotalPrints(DGUS_VP& vp) {
-#if ENABLED(PRINTCOUNTER)
-  dgus_display.Write((uint16_t)vp.addr, dgus_display.SwapBytes(print_job_timer.getStats().totalPrints));
-#else
-  UNUSED(vp);
-#endif
+void DGUSTxHandler::TotalPrints(DGUS_VP &vp) {
+  #if ENABLED(PRINTCOUNTER)
+    dgus_display.Write((uint16_t)vp.addr, dgus_display.SwapBytes(print_job_timer.getStats().totalPrints));
+  #else
+    UNUSED(vp);
+  #endif
 }
 
-void DGUSTxHandler::FinishedPrints(DGUS_VP& vp) {
-#if ENABLED(PRINTCOUNTER)
-  dgus_display.Write((uint16_t)vp.addr, dgus_display.SwapBytes(print_job_timer.getStats().finishedPrints));
-#else
-  UNUSED(vp);
-#endif
+void DGUSTxHandler::FinishedPrints(DGUS_VP &vp) {
+  #if ENABLED(PRINTCOUNTER)
+    dgus_display.Write((uint16_t)vp.addr, dgus_display.SwapBytes(print_job_timer.getStats().finishedPrints));
+  #else
+    UNUSED(vp);
+  #endif
 }
 
-void DGUSTxHandler::PrintTime(DGUS_VP& vp) {
-#if ENABLED(PRINTCOUNTER)
-  char buffer[21];
-  ExtUI::getTotalPrintTime_str(buffer);
+void DGUSTxHandler::PrintTime(DGUS_VP &vp) {
+  #if ENABLED(PRINTCOUNTER)
+    char buffer[21];
+    ExtUI::getTotalPrintTime_str(buffer);
 
-  dgus_display.WriteString((uint16_t)vp.addr, buffer, vp.size);
-#else
-  dgus_display.WriteStringPGM((uint16_t)vp.addr, DGUS_MSG_UNDEF, vp.size);
-#endif
+    dgus_display.WriteString((uint16_t)vp.addr, buffer, vp.size);
+  #else
+    dgus_display.WriteStringPGM((uint16_t)vp.addr, DGUS_MSG_UNDEF, vp.size);
+  #endif
 }
 
-void DGUSTxHandler::LongestPrint(DGUS_VP& vp) {
-#if ENABLED(PRINTCOUNTER)
-  char buffer[21];
-  ExtUI::getLongestPrint_str(buffer);
+void DGUSTxHandler::LongestPrint(DGUS_VP &vp) {
+  #if ENABLED(PRINTCOUNTER)
+    char buffer[21];
+    ExtUI::getLongestPrint_str(buffer);
 
-  dgus_display.WriteString((uint16_t)vp.addr, buffer, vp.size);
-#else
-  dgus_display.WriteStringPGM((uint16_t)vp.addr, DGUS_MSG_UNDEF, vp.size);
-#endif
+    dgus_display.WriteString((uint16_t)vp.addr, buffer, vp.size);
+  #else
+    dgus_display.WriteStringPGM((uint16_t)vp.addr, DGUS_MSG_UNDEF, vp.size);
+  #endif
 }
 
-void DGUSTxHandler::FilamentUsed(DGUS_VP& vp) {
-#if ENABLED(PRINTCOUNTER)
-  char buffer[21];
-  ExtUI::getFilamentUsed_str(buffer);
+void DGUSTxHandler::FilamentUsed(DGUS_VP &vp) {
+  #if ENABLED(PRINTCOUNTER)
+    char buffer[21];
+    ExtUI::getFilamentUsed_str(buffer);
 
-  dgus_display.WriteString((uint16_t)vp.addr, buffer, vp.size);
-#else
-  dgus_display.WriteStringPGM((uint16_t)vp.addr, DGUS_MSG_UNDEF, vp.size);
-#endif
+    dgus_display.WriteString((uint16_t)vp.addr, buffer, vp.size);
+  #else
+    dgus_display.WriteStringPGM((uint16_t)vp.addr, DGUS_MSG_UNDEF, vp.size);
+  #endif
 }
 
-void DGUSTxHandler::WaitIcons(DGUS_VP& vp) {
+void DGUSTxHandler::WaitIcons(DGUS_VP &vp) {
   uint16_t icons = 0;
 
   if (printingIsPaused()
@@ -597,40 +590,37 @@ void DGUSTxHandler::WaitIcons(DGUS_VP& vp) {
     icons |= (uint16_t)DGUS_Data::WaitIcon::ABORT;
 
     dgus_display.EnableControl(DGUS_Screen::WAIT,
-      DGUSDisplay::POPUP_WINDOW,
-      DGUS_Control::ABORT);
+                               DGUSDisplay::POPUP_WINDOW,
+                               DGUS_Control::ABORT);
   }
   else     {
     dgus_display.DisableControl(DGUS_Screen::WAIT,
-      DGUSDisplay::POPUP_WINDOW,
-      DGUS_Control::ABORT);
+                                DGUSDisplay::POPUP_WINDOW,
+                                DGUS_Control::ABORT);
   }
 
-  if (dgus_screen_handler.wait_continue)     {
+  if (dgus_screen_handler.wait_continue) {
     icons |= (uint16_t)DGUS_Data::WaitIcon::CONTINUE;
 
     dgus_display.EnableControl(DGUS_Screen::WAIT,
-      DGUSDisplay::RETURN_KEY_CODE,
-      DGUS_Control::CONTINUE);
+                               DGUSDisplay::RETURN_KEY_CODE,
+                               DGUS_Control::CONTINUE);
   }
-  else     {
+  else {
     dgus_display.DisableControl(DGUS_Screen::WAIT,
-      DGUSDisplay::RETURN_KEY_CODE,
-      DGUS_Control::CONTINUE);
+                                DGUSDisplay::RETURN_KEY_CODE,
+                                DGUS_Control::CONTINUE);
   }
 
   dgus_display.Write((uint16_t)vp.addr, Swap16(icons));
 }
 
-void DGUSTxHandler::FanSpeed(DGUS_VP& vp) {
+void DGUSTxHandler::FanSpeed(DGUS_VP &vp) {
   uint16_t fan_speed;
 
-  switch (vp.addr)     {
-  default:
-    return;
-  case DGUS_Addr::FAN0_Speed:
-    fan_speed = ExtUI::getTargetFan_percent(ExtUI::FAN0);
-    break;
+  switch (vp.addr) {
+    default: return;
+    case DGUS_Addr::FAN0_Speed: fan_speed = ExtUI::getTargetFan_percent(ExtUI::FAN0); break;
   case DGUS_Addr::FAN0_Speed_CUR:
     fan_speed = ExtUI::getActualFan_percent(ExtUI::FAN0);
     break;
@@ -639,25 +629,25 @@ void DGUSTxHandler::FanSpeed(DGUS_VP& vp) {
   dgus_display.Write((uint16_t)vp.addr, Swap16(fan_speed));
 }
 
-void DGUSTxHandler::FeedrateMMS(DGUS_VP& vp) {
+void DGUSTxHandler::FeedrateMMS(DGUS_VP &vp) {
   // TODO: Read value from planner/stepper?
   const int16_t data = dgus_display.ToFixedPoint<float, int16_t, 0>(MMS_SCALED(feedrate_mm_s));
   dgus_display.Write((uint16_t)vp.addr, Swap16(data));
 }
 
-void DGUSTxHandler::Volume(DGUS_VP& vp) {
+void DGUSTxHandler::Volume(DGUS_VP &vp) {
   const uint16_t volume = dgus_display.GetVolume();
 
   dgus_display.Write((uint16_t)vp.addr, Swap16(volume));
 }
 
-void DGUSTxHandler::Brightness(DGUS_VP& vp) {
+void DGUSTxHandler::Brightness(DGUS_VP &vp) {
   const uint16_t brightness = dgus_display.GetBrightness();
 
   dgus_display.Write((uint16_t)vp.addr, Swap16(brightness));
 }
 
-void DGUSTxHandler::StepsPerMmX(DGUS_VP& vp) {
+void DGUSTxHandler::StepsPerMmX(DGUS_VP &vp) {
   const int32_t data = dgus_display.ToFixedPoint<float, int32_t, 2>(ExtUI::getAxisSteps_per_mm(ExtUI::axis_t::X));
   dgus_display.Write((uint16_t)vp.addr, dgus_display.SwapBytes(data));
 }
@@ -790,16 +780,14 @@ void DGUSTxHandler::MinTravelFeedRate(DGUS_VP& vp) {
   dgus_display.Write((uint16_t)vp.addr, Swap16(data));
 }
 
-void DGUSTxHandler::ExtraToString(DGUS_VP& vp) {
-  if (!vp.size || !vp.extra)
-    return;
+void DGUSTxHandler::ExtraToString(DGUS_VP &vp) {
+  if (!vp.size || !vp.extra) return;
 
   dgus_display.WriteString((uint16_t)vp.addr, vp.extra, vp.size, true, false, false);
 }
 
-void DGUSTxHandler::ExtraPGMToString(DGUS_VP& vp) {
-  if (!vp.size || !vp.extra)
-    return;
+void DGUSTxHandler::ExtraPGMToString(DGUS_VP &vp) {
+  if (!vp.size || !vp.extra) return;
 
   dgus_display.WriteStringPGM((uint16_t)vp.addr, vp.extra, vp.size, true, false, false);
 }
