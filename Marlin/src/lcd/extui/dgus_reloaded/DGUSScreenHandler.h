@@ -98,8 +98,8 @@ public:
     static int16_t filelist_selected;
   #endif
 
-    static DGUS_Data::StepSize offset_steps;
-    static DGUS_Data::StepSize move_steps;
+  static DGUS_Data::StepSize offset_steps;
+  static DGUS_Data::StepSize move_steps;
 
   #if HAS_LEVELING
     static uint16_t probing_colors[2];
@@ -108,12 +108,12 @@ public:
     static float baby_offset;
   #endif
     
-    static uint8_t levelingPoint;
+  static uint8_t levelingPoint;
 
-    static DGUS_Data::Extruder filament_extruder;
-    static uint16_t filament_length;
+  static DGUS_Data::Extruder filament_extruder;
+  static uint16_t filament_length;
 
-    static char gcode[DGUS_GCODE_LEN + 1];
+  static char gcode[DGUS_GCODE_LEN + 1];
 
   static DGUS_Data::Heater pid_heater;
   static uint16_t pid_temp;
@@ -137,10 +137,10 @@ private:
   static DGUS_Screen new_screen;
   static bool full_update;
 
-    static DGUS_Screen wait_return_screen;
+  static DGUS_Screen wait_return_screen;
 
-    static millis_t status_expire;
-    static millis_t eeprom_save;
+  static millis_t status_expire;
+  static millis_t eeprom_save;
 
   typedef struct {
     bool initialized;
