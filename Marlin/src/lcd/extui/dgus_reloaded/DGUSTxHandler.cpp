@@ -68,8 +68,8 @@
       dgus_display.DisableControl(DGUS_Screen::PRINT,
                                   DGUSDisplay::RETURN_KEY_CODE,
                                   control);
+    }
   }
-}
 
   void DGUSTxHandler::FileType(DGUS_VP &vp) {
     // Batch send
@@ -169,16 +169,17 @@
   }
 
   void DGUSTxHandler::SelectedFileName(DGUS_VP &vp) {
-    if (dgus_screen_handler.filelist_selected < 0 || !dgus_screen_handler.filelist.seek(dgus_screen_handler.filelist_selected)) {
-    dgus_display.WriteStringPGM((uint16_t)vp.addr, NUL_STR, vp.size);
-    return;
-  }
+    if (dgus_screen_handler.filelist_selected < 0
+        || !dgus_screen_handler.filelist.seek(dgus_screen_handler.filelist_selected)) {
+      dgus_display.WriteStringPGM((uint16_t)vp.addr, NUL_STR, vp.size);
+      return;
+    }
 
-  const char* filename = dgus_screen_handler.filelist.filename();
-  dgus_display.WriteString((uint16_t)vp.addr, filename, vp.size, true, false, false);
-}
+    const char* filename = dgus_screen_handler.filelist.filename();
+    dgus_display.WriteString((uint16_t)vp.addr, filename, vp.size, true, false, false);
+ }
 
-void DGUSTxHandler::SelectedFileNameFormat(DGUS_VP& vp) {
+void DGUSTxHandler::SelectedFileNameFormat(DGUS_VP &vp) {
   if (dgus_screen_handler.filelist_selected < 0 || !dgus_screen_handler.filelist.seek(dgus_screen_handler.filelist_selected))     {
     return;
   }
