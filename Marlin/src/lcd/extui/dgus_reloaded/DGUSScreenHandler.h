@@ -70,15 +70,15 @@ public:
     static void PidTuning(const ExtUI::result_t rst);
   #endif
 
-    static void ShowPauseMessage(PauseMessage message, PauseMode mode);
+  static void ShowPauseMessage(PauseMessage message, PauseMode mode);
 
-    static void SetMessageLine(const char *msg, uint8_t line);
-    static void SetMessageLinePGM(PGM_P msg, uint8_t line);
+  static void SetMessageLine(const char *msg, uint8_t line);
+  static void SetMessageLinePGM(PGM_P msg, uint8_t line);
   static void SetStatusMessage(const char* msg, const millis_t duration = DGUS_STATUS_EXPIRATION_MS);
   static void SetStatusMessage(FSTR_P const msg, const millis_t duration = DGUS_STATUS_EXPIRATION_MS);
 
-    static void SetTextSize(DGUS_Addr var, uint16_t len, const int16_t *boxSize, bool center = false);
-    static void ShowWaitScreen(DGUS_Screen return_screen, bool has_continue = false);
+  static void SetTextSize(DGUS_Addr var, uint16_t len, const int16_t *boxSize, bool center = false);
+  static void ShowWaitScreen(DGUS_Screen return_screen, bool has_continue = false);
 
   static DGUS_Screen GetCurrentScreen();
   static void TriggerScreenChange(DGUS_Screen screen);
@@ -90,7 +90,7 @@ public:
 
   static void MoveToLevelPoint();
 
-    static uint8_t debug_count;
+  static uint8_t debug_count;
 
   #if ENABLED(SDSUPPORT)
     static ExtUI::FileList filelist;
@@ -124,7 +124,7 @@ public:
   static bool leveling_active;
 
 private:
-  static const DGUS_Addr *FindScreenAddrList(DGUS_Screen screen);
+  static const DGUS_Addr* FindScreenAddrList(DGUS_Screen screen);
   static bool CallScreenSetup(DGUS_Screen screen);
 
   static void MoveToScreen(DGUS_Screen screen, bool abort_wait = false);
