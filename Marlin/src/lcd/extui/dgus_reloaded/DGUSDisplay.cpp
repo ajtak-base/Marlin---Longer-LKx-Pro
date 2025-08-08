@@ -273,53 +273,53 @@ void DGUSDisplay::ProcessRx() {
           receivedbyte = LCD_SERIAL.read();
           DEBUG_ECHOPAIR_F(" ", receivedbyte);
           *ptmp++ = receivedbyte;
-      }
+        }
         DEBUG_ECHOPGM(" # ");
-      // mostly we'll get this: 5A A5 03 82 4F 4B -- ACK on 0x82, so discard it.
-      if (command == DGUS_WRITEVAR && 'O' == tmp[0] && 'K' == tmp[1]) {
-        DEBUG_ECHOLNPGM(">");
-        rx_datagram_state = DGUS_IDLE;
-          break;
-      }
-
-      /* AutoUpload, (and answer to) Command 0x83 :
-  |      tmp[0  1  2  3  4 ... ]
-  | Example 5A A5 06 83 20 01 01 78 01 ……
-  |          / /  |  |   \ /   |  \     \
-  |        Header |  |    |    |   \_____\_ DATA (Words!)
-  |     DatagramLen  /  VPAdr  |
-  |           Command          DataLen (in Words) */
-      if (command == DGUS_READVAR) {
-        const uint16_t addr = tmp[0] << 8 | tmp[1];
-        const uint8_t dlen = tmp[2] << 1; // Convert to Bytes. (Display works with words)
-          DEBUG_ECHOPAIR_F("addr=", addr, " dlen=", dlen, "> ");
-
-        if (addr == DGUS_VERSION && dlen == 2) {
-          DEBUG_ECHOLNPGM("VERSIONS");
-          gui_version = tmp[3];
-          os_version = tmp[4];
+        // mostly we'll get this: 5A A5 03 82 4F 4B -- ACK on 0x82, so discard it.
+        if (command == DGUS_WRITEVAR && 'O' == tmp[0] && 'K' == tmp[1]) {
+          DEBUG_ECHOLNPGM(">");
           rx_datagram_state = DGUS_IDLE;
           break;
         }
 
-        DGUS_VP vp;
-        if (!DGUS_PopulateVP((DGUS_Addr)addr, &vp)) {
-          DEBUG_ECHOLNPGM("VP not found");
-          rx_datagram_state = DGUS_IDLE;
-          break;
-        }
+        /* AutoUpload, (and answer to) Command 0x83 :
+        |      tmp[0  1  2  3  4 ... ]
+        | Example 5A A5 06 83 20 01 01 78 01 ……
+        |          / /  |  |   \ /   |  \     \
+        |        Header |  |    |    |   \_____\_ DATA (Words!)
+        |     DatagramLen  /  VPAdr  |
+        |           Command          DataLen (in Words) */
+        if (command == DGUS_READVAR) {
+          const uint16_t addr = tmp[0] << 8 | tmp[1];
+          const uint8_t dlen = tmp[2] << 1;  // Convert to Bytes. (Display works with words)
+           DEBUG_ECHOPAIR_F("addr=", addr, " dlen=", dlen, "> ");
 
-        if (!vp.rx_handler) {
-          DEBUG_ECHOLNPGM("VP found, no handler.");
-          rx_datagram_state = DGUS_IDLE;
-          break;
-        }
+          if (addr == DGUS_VERSION && dlen == 2) {
+            DEBUG_ECHOLNPGM("VERSIONS");
+            gui_version = tmp[3];
+            os_version = tmp[4];
+            rx_datagram_state = DGUS_IDLE;
+            break;
+          }
+
+          DGUS_VP vp;
+          if (!DGUS_PopulateVP((DGUS_Addr)addr, &vp)) {
+            DEBUG_ECHOLNPGM("VP not found");
+            rx_datagram_state = DGUS_IDLE;
+            break;
+          }
+
+          if (!vp.rx_handler) {
+            DEBUG_ECHOLNPGM("VP found, no handler.");
+            rx_datagram_state = DGUS_IDLE;
+            break;
+          }
 
           gcode.reset_stepper_timeout();
 
-        if (!vp.size) {
-          DEBUG_ECHOLN();
-          vp.rx_handler(vp, nullptr);
+          if (!vp.size) {
+            DEBUG_ECHOLN();
+            vp.rx_handler(vp, nullptr);
 
             rx_datagram_state = DGUS_IDLE;
             break;
@@ -336,31 +336,31 @@ void DGUSDisplay::ProcessRx() {
                 break;
 
               buffer[i] = tmp[i + 3];
+            }
+
+            DEBUG_ECHOLN();
+            vp.rx_handler(vp, buffer);
+
+            rx_datagram_state = DGUS_IDLE;
+            break;
+          }
+
+          if (dlen != vp.size) {
+            DEBUG_ECHOLNPGM("VP found, size mismatch.");
+            rx_datagram_state = DGUS_IDLE;
+            break;
           }
 
           DEBUG_ECHOLN();
-          vp.rx_handler(vp, buffer);
+          vp.rx_handler(vp, &tmp[3]);
 
           rx_datagram_state = DGUS_IDLE;
           break;
         }
 
-        if (dlen != vp.size) {
-          DEBUG_ECHOLNPGM("VP found, size mismatch.");
-          rx_datagram_state = DGUS_IDLE;
-          break;
-        }
-
-        DEBUG_ECHOLN();
-        vp.rx_handler(vp, &tmp[3]);
-
+        DEBUG_ECHOLNPGM(">");
         rx_datagram_state = DGUS_IDLE;
         break;
-      }
-
-      DEBUG_ECHOLNPGM(">");
-      rx_datagram_state = DGUS_IDLE;
-      break;
     }
   }
 }
