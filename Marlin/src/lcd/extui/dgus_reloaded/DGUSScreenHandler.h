@@ -46,10 +46,11 @@ public:
   static void ConfigurationStoreRead(bool success);
 
   static void PlayTone(const uint16_t frequency, const uint16_t duration);
-  static void MeshUpdate(const int8_t xpos, const int8_t ypos);
+  static void MeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval);
   static void PrintTimerStarted();
   static void PrintTimerPaused();
   static void PrintTimerStopped();
+  static void PrintFinished();
   static void FilamentRunout(const ExtUI::extruder_t extruder);
 
   #if ENABLED(SDSUPPORT)
@@ -69,12 +70,14 @@ public:
     static void PidTuning(const ExtUI::result_t rst);
   #endif
 
-  static void SetMessageLine(const char* msg, uint8_t line);
-  static void SetMessageLinePGM(PGM_P msg, uint8_t line);
+  static void ShowPauseMessage(PauseMessage message, PauseMode mode);
 
+  static void SetMessageLine(const char *msg, uint8_t line);
+  static void SetMessageLinePGM(PGM_P msg, uint8_t line);
   static void SetStatusMessage(const char* msg, const millis_t duration = DGUS_STATUS_EXPIRATION_MS);
   static void SetStatusMessage(FSTR_P const msg, const millis_t duration = DGUS_STATUS_EXPIRATION_MS);
 
+  static void SetTextSize(DGUS_Addr var, uint16_t len, const int16_t *boxSize, bool center = false);
   static void ShowWaitScreen(DGUS_Screen return_screen, bool has_continue = false);
 
   static DGUS_Screen GetCurrentScreen();
@@ -84,6 +87,8 @@ public:
   static void TriggerEEPROMSave();
 
   static bool IsPrinterIdle();
+
+  static void MoveToLevelPoint();
 
   static uint8_t debug_count;
 
@@ -96,7 +101,14 @@ public:
   static DGUS_Data::StepSize offset_steps;
   static DGUS_Data::StepSize move_steps;
 
-  static uint16_t probing_icons[2];
+  #if HAS_LEVELING
+    static uint16_t probing_colors[2];
+    static float probing_values[GRID_MAX_POINTS_X][GRID_MAX_POINTS_Y];
+  #else
+    static float baby_offset;
+  #endif
+    
+  static uint8_t levelingPoint;
 
   static DGUS_Data::Extruder filament_extruder;
   static uint16_t filament_length;

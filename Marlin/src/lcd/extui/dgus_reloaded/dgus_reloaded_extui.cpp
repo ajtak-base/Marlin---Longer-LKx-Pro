@@ -30,6 +30,7 @@
 
 #include "../ui_api.h"
 #include "DGUSScreenHandler.h"
+#include "../../../MarlinCore.h"
 
 namespace ExtUI {
 
@@ -84,7 +85,9 @@ namespace ExtUI {
 
   void onHomingStart() {}
   void onHomingDone() {}
-  void onPrintDone() {}
+  void onPrintDone() {
+    dgus_screen_handler.PrintFinished();
+  }
 
   void onFactoryReset() {
     dgus_screen_handler.SettingsReset();
@@ -111,16 +114,20 @@ namespace ExtUI {
   #if HAS_MESH
     void onLevelingStart() {}
     void onLevelingDone() {}
-
+    
     void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval) {
-      dgus_screen_handler.MeshUpdate(xpos, ypos);
-    }
+      dgus_screen_handler.MeshUpdate(xpos, ypos, zval);
+   }
 
-    void onMeshUpdate(const int8_t xpos, const int8_t ypos, const probe_state_t state) {
-      if (state == G29_POINT_FINISH)
-        dgus_screen_handler.MeshUpdate(xpos, ypos);
+  void onMeshUpdate(const int8_t xpos, const int8_t ypos, const ExtUI::probe_state_t state) {
+    if (state == ExtUI::probe_state_t::G29_POINT_FINISH) {
+      xy_uint8_t pos = { (uint8_t)xpos, (uint8_t)ypos };
+      dgus_screen_handler.MeshUpdate(xpos, ypos, ExtUI::getMeshPoint(pos));
     }
-  #endif
+  }
+
+  void onMeshLevelingStart() {}
+#endif
 
   #if ENABLED(POWER_LOSS_RECOVERY)
     void onPowerLossResume() {
@@ -136,8 +143,17 @@ namespace ExtUI {
     }
   #endif
 
+  // Pause message - equivalent of ui.pause_show_message()
+  void onPauseMessage(PauseMessage message, PauseMode mode)   {
+    dgus_screen_handler.ShowPauseMessage(message, mode);
+  }
+
   void onSteppersDisabled() {}
   void onSteppersEnabled()  {}
+
+  void onPrintFinished() {
+    dgus_screen_handler.PrintFinished();
+  }
 }
 
 #endif // DGUS_LCD_UI_RELOADED

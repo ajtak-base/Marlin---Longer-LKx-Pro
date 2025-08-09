@@ -242,7 +242,7 @@ void GcodeSuite::G28() {
 
   // Disable the leveling matrix before homing
   #if CAN_SET_LEVELING_AFTER_G28
-    const bool leveling_restore_state = parser.boolval('L', TERN1(RESTORE_LEVELING_AFTER_G28, planner.leveling_active));
+    const bool leveling_restore_state = ENABLED(ENABLE_LEVELING_AFTER_G28) || parser.boolval('L', TERN1(RESTORE_LEVELING_AFTER_G28, planner.leveling_active));
   #endif
 
   // Cancel any prior G29 session

@@ -175,17 +175,26 @@
       return;
     }
 
-    dgus_display.WriteString((uint16_t)vp.addr, dgus_screen_handler.filelist.filename(), vp.size);
+    const char* filename = dgus_screen_handler.filelist.filename();
+    dgus_display.WriteString((uint16_t)vp.addr, filename, vp.size, true, false, false);
+ }
+
+void DGUSTxHandler::SelectedFileNameFormat(DGUS_VP &vp) {
+  if (dgus_screen_handler.filelist_selected < 0 || !dgus_screen_handler.filelist.seek(dgus_screen_handler.filelist_selected))     {
+    return;
   }
+  uint16_t txtlen = _MIN(strlen(dgus_screen_handler.filelist.filename()), DGUS_FILENAME_LEN);
+  dgus_screen_handler.SetTextSize(vp.addr, txtlen, STATUS_Filename_Box, false);
+}
 #endif // SDSUPPORT
 
 void DGUSTxHandler::PositionZ(DGUS_VP &vp) {
-  float position = ExtUI::isAxisPositionKnown(ExtUI::Z) ?
-                     planner.get_axis_position_mm(Z_AXIS)
-                   : 0;
+  DEBUG_ECHOLNPGM("posz getaxis ", planner.get_axis_position_mm(Z_AXIS), " current ", current_position.z, " planner ", planner.position.z);
+  float position = ExtUI::isAxisPositionKnown(ExtUI::Z) ? current_position.z : 0;
+  //planner.get_axis_position_mm(Z_AXIS)
 
-  const int16_t data = dgus_display.ToFixedPoint<float, int16_t, 1>(position);
-  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
+  const int32_t data = dgus_display.ToFixedPoint<float, int32_t, 2>(position);
+  dgus_display.Write((uint16_t)vp.addr, dgus_display.SwapBytes(data));
 }
 
 void DGUSTxHandler::Ellapsed(DGUS_VP &vp) {
@@ -212,35 +221,41 @@ void DGUSTxHandler::Percent(DGUS_VP &vp) {
 }
 
 void DGUSTxHandler::StatusIcons(DGUS_VP &vp) {
-  uint16_t icons = 0;
-
-  if (ExtUI::isPrinting()) {
-    icons |= (uint16_t)DGUS_Data::StatusIcon::PAUSE;
-
-    dgus_display.EnableControl(DGUS_Screen::PRINT_STATUS,
-                               DGUSDisplay::POPUP_WINDOW,
-                               DGUS_Control::PAUSE);
+  uint16_t icon = (uint16_t)DGUS_Data::StatusIcon::RESUME;
+  if (printingIsActive())     {
+    icon = (uint16_t)DGUS_Data::StatusIcon::PAUSE;
   }
-  else {
-    dgus_display.DisableControl(DGUS_Screen::PRINT_STATUS,
-                                DGUSDisplay::POPUP_WINDOW,
-                                DGUS_Control::PAUSE);
-  }
+  dgus_display.Write((uint16_t)vp.addr, Swap16(icon));
 
-  if (ExtUI::isPrintingPaused()) {
-    icons |= (uint16_t)DGUS_Data::StatusIcon::RESUME;
+  // uint16_t icons = 0;
 
-    dgus_display.EnableControl(DGUS_Screen::PRINT_STATUS,
-                               DGUSDisplay::POPUP_WINDOW,
-                               DGUS_Control::RESUME);
-  }
-  else {
-    dgus_display.DisableControl(DGUS_Screen::PRINT_STATUS,
-                                DGUSDisplay::POPUP_WINDOW,
-                                DGUS_Control::RESUME);
-  }
+  // if (printingIsActive()) {
+  //   icons |= (uint16_t)DGUS_Data::StatusIcon::PAUSE;
 
-  dgus_display.Write((uint16_t)vp.addr, Swap16(icons));
+  //   dgus_display.EnableControl(DGUS_Screen::PRINT_STATUS,
+  //                              DGUSDisplay::POPUP_WINDOW,
+  //                              DGUS_Control::PAUSE);
+  // }
+  // else {
+  //   dgus_display.DisableControl(DGUS_Screen::PRINT_STATUS,
+  //                               DGUSDisplay::POPUP_WINDOW,
+  //                               DGUS_Control::PAUSE);
+  // }
+
+  // if (printingIsPaused()) {
+  //   icons |= (uint16_t)DGUS_Data::StatusIcon::RESUME;
+
+  //   dgus_display.EnableControl(DGUS_Screen::PRINT_STATUS,
+  //                              DGUSDisplay::POPUP_WINDOW,
+  //                              DGUS_Control::RESUME);
+  // }
+  // else {
+  //   dgus_display.DisableControl(DGUS_Screen::PRINT_STATUS,
+  //                               DGUSDisplay::POPUP_WINDOW,
+  //                               DGUS_Control::RESUME);
+  // }
+
+  // dgus_display.Write((uint16_t)vp.addr, Swap16(icons));
 }
 
 void DGUSTxHandler::Flowrate(DGUS_VP &vp) {
@@ -249,8 +264,12 @@ void DGUSTxHandler::Flowrate(DGUS_VP &vp) {
   switch (vp.addr) {
     default: return;
     case DGUS_Addr::ADJUST_Flowrate_CUR:
-      flowrate = ExtUI::getFlow_percent(TERN(HAS_MULTI_EXTRUDER, ExtUI::getActiveTool(), ExtUI::E0));
-      break;
+    #if HAS_MULTI_EXTRUDER
+      flowrate = ExtUI::getFlow_percent(ExtUI::getActiveTool());
+    #else
+      flowrate = ExtUI::getFlow_percent(ExtUI::E0);
+    #endif
+    break;
     #if HAS_MULTI_EXTRUDER
       case DGUS_Addr::ADJUST_Flowrate_E0:
         flowrate = ExtUI::getFlow_percent(ExtUI::E0);
@@ -312,7 +331,7 @@ void DGUSTxHandler::StepIcons(DGUS_VP &vp) {
 
   dgus_display.Write((uint16_t)vp.addr, Swap16(icons));
 }
-
+#if HAS_LEVELING
 void DGUSTxHandler::ABLDisableIcon(DGUS_VP &vp) {
   uint16_t data;
 
@@ -343,12 +362,25 @@ void DGUSTxHandler::ABLGrid(DGUS_VP &vp) {
   for (int i = 0; i < DGUS_LEVEL_GRID_SIZE; i++) {
     point.x = i % (GRID_MAX_POINTS_X);
     point.y = i / (GRID_MAX_POINTS_X);
-    fixed = dgus_display.ToFixedPoint<float, int16_t, 3>(ExtUI::getMeshPoint(point));
+    fixed = dgus_display.ToFixedPoint<float, int16_t, 3>(dgus_screen_handler.probing_values[point.x][point.y]);
+    DEBUG_ECHOLNPAIR_F("grid x ", point.x, " y ", point.y, " value ", fixed);
     data[i] = Swap16(fixed);
   }
-
+  DEBUG_ECHOLNPAIR_F("sending byte count", sizeof(*data) * DGUS_LEVEL_GRID_SIZE);
   dgus_display.Write((uint16_t)vp.addr, data, sizeof(*data) * DGUS_LEVEL_GRID_SIZE);
 }
+
+void DGUSTxHandler::ABLGridColor(DGUS_VP &vp) {
+  // Set color for each value
+  for (int point = 0; point < DGUS_LEVEL_GRID_SIZE; point++)     {
+    uint16_t color = Swap16(COLOR_WHITE);
+    if ((dgus_screen_handler.probing_colors[point < 16 ? 0 : 1] & (1U << (point % 16))) != 0)         {
+      color = Swap16(COLOR_GREEN);
+    }
+    dgus_display.Write((uint16_t)vp.addr + point * DGUS_SP_VARIABLE_LEN + (int)DGUS_SP_Variable::COLOR, color);
+  }
+}
+#endif
 
 void DGUSTxHandler::FilamentIcons(DGUS_VP &vp) {
   uint16_t icons = 0;
@@ -551,14 +583,18 @@ void DGUSTxHandler::FilamentUsed(DGUS_VP &vp) {
 void DGUSTxHandler::WaitIcons(DGUS_VP &vp) {
   uint16_t icons = 0;
 
-  if (ExtUI::isPrintingPaused()) {
+  if (printingIsPaused()
+  #if ENABLED(ADVANCED_PAUSE_FEATURE)
+    && did_pause_print
+  #endif
+    )     {
     icons |= (uint16_t)DGUS_Data::WaitIcon::ABORT;
 
     dgus_display.EnableControl(DGUS_Screen::WAIT,
                                DGUSDisplay::POPUP_WINDOW,
                                DGUS_Control::ABORT);
   }
-  else {
+  else     {
     dgus_display.DisableControl(DGUS_Screen::WAIT,
                                 DGUSDisplay::POPUP_WINDOW,
                                 DGUS_Control::ABORT);
@@ -586,9 +622,18 @@ void DGUSTxHandler::FanSpeed(DGUS_VP &vp) {
   switch (vp.addr) {
     default: return;
     case DGUS_Addr::FAN0_Speed: fan_speed = ExtUI::getTargetFan_percent(ExtUI::FAN0); break;
+  case DGUS_Addr::FAN0_Speed_CUR:
+    fan_speed = ExtUI::getActualFan_percent(ExtUI::FAN0);
+    break;
   }
 
   dgus_display.Write((uint16_t)vp.addr, Swap16(fan_speed));
+}
+
+void DGUSTxHandler::FeedrateMMS(DGUS_VP &vp) {
+  // TODO: Read value from planner/stepper?
+  const int16_t data = dgus_display.ToFixedPoint<float, int16_t, 0>(MMS_SCALED(feedrate_mm_s));
+  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
 }
 
 void DGUSTxHandler::Volume(DGUS_VP &vp) {
@@ -601,6 +646,139 @@ void DGUSTxHandler::Brightness(DGUS_VP &vp) {
   const uint16_t brightness = dgus_display.GetBrightness();
 
   dgus_display.Write((uint16_t)vp.addr, Swap16(brightness));
+}
+
+void DGUSTxHandler::StepsPerMmX(DGUS_VP &vp) {
+  const int32_t data = dgus_display.ToFixedPoint<float, int32_t, 2>(ExtUI::getAxisSteps_per_mm(ExtUI::axis_t::X));
+  dgus_display.Write((uint16_t)vp.addr, dgus_display.SwapBytes(data));
+}
+
+void DGUSTxHandler::StepsPerMmY(DGUS_VP& vp) {
+  const int32_t data = dgus_display.ToFixedPoint<float, int32_t, 2>(ExtUI::getAxisSteps_per_mm(ExtUI::axis_t::Y));
+  dgus_display.Write((uint16_t)vp.addr, dgus_display.SwapBytes(data));
+}
+
+void DGUSTxHandler::StepsPerMmZ(DGUS_VP& vp) {
+  const int32_t data = dgus_display.ToFixedPoint<float, int32_t, 2>(ExtUI::getAxisSteps_per_mm(ExtUI::axis_t::Z));
+  dgus_display.Write((uint16_t)vp.addr, dgus_display.SwapBytes(data));
+}
+
+void DGUSTxHandler::StepsPerMmE(DGUS_VP& vp) {
+  const int32_t data = dgus_display.ToFixedPoint<float, int32_t, 2>(ExtUI::getAxisSteps_per_mm(ExtUI::extruder_t::E0));
+  dgus_display.Write((uint16_t)vp.addr, dgus_display.SwapBytes(data));
+}
+
+void DGUSTxHandler::JerkStepsMmX(DGUS_VP& vp) {
+#if ENABLED(CLASSIC_JERK)
+  const int16_t data = dgus_display.ToFixedPoint<float, int16_t, 1>(ExtUI::getAxisMaxJerk_mm_s(ExtUI::axis_t::X));
+  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
+#else
+#endif
+}
+
+void DGUSTxHandler::JerkStepsMmY(DGUS_VP& vp) {
+#if ENABLED(CLASSIC_JERK)
+  const int16_t data = dgus_display.ToFixedPoint<float, int16_t, 1>(ExtUI::getAxisMaxJerk_mm_s(ExtUI::axis_t::Y));
+  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
+#else
+#endif
+}
+
+void DGUSTxHandler::JerkStepsMmZ(DGUS_VP& vp) {
+#if ENABLED(CLASSIC_JERK)
+  const int16_t data = dgus_display.ToFixedPoint<float, int16_t, 1>(ExtUI::getAxisMaxJerk_mm_s(ExtUI::axis_t::Z));
+  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
+#else
+#endif
+}
+
+void DGUSTxHandler::JerkStepsMmE(DGUS_VP& vp) {
+#if ENABLED(CLASSIC_JERK)
+  const int16_t data = dgus_display.ToFixedPoint<float, int16_t, 1>(ExtUI::getAxisMaxJerk_mm_s(ExtUI::extruder_t::E0));
+  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
+#else
+#endif
+}
+
+void DGUSTxHandler::JunctionDeviation(DGUS_VP& vp) {
+#if HAS_JUNCTION_DEVIATION
+  const int16_t data = dgus_display.ToFixedPoint<float, int16_t, 3>(ExtUI::getJunctionDeviation_mm()));
+  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
+#else
+#endif
+}
+
+void DGUSTxHandler::LinearAdvance(DGUS_VP& vp) {
+#if ENABLED(LIN_ADVANCE)
+  const int16_t data = dgus_display.ToFixedPoint<float, int16_t, 2>(ExtUI::getLinearAdvance_mm_mm_s(ExtUI::extruder_t::E0));
+  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
+#else
+#endif
+}
+
+void DGUSTxHandler::AccelerationX(DGUS_VP& vp) {
+  const int16_t data = dgus_display.ToFixedPoint<float, int16_t, 0>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::axis_t::X));
+  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::AccelerationY(DGUS_VP& vp) {
+  const int16_t data = dgus_display.ToFixedPoint<float, int16_t, 0>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::axis_t::Y));
+  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::AccelerationZ(DGUS_VP& vp) {
+  const int16_t data = dgus_display.ToFixedPoint<float, int16_t, 0>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::axis_t::Z));
+  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::AccelerationE(DGUS_VP& vp) {
+  const int16_t data = dgus_display.ToFixedPoint<float, int16_t, 0>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::extruder_t::E0));
+  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::AccelerationPrint(DGUS_VP& vp) {
+  const int16_t data = dgus_display.ToFixedPoint<float, int16_t, 0>(ExtUI::getPrintingAcceleration_mm_s2());
+  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::AccelerationRetract(DGUS_VP& vp) {
+  const int16_t data = dgus_display.ToFixedPoint<float, int16_t, 0>(ExtUI::getRetractAcceleration_mm_s2());
+  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::AccelerationTravel(DGUS_VP& vp) {
+  const int16_t data = dgus_display.ToFixedPoint<float, int16_t, 0>(ExtUI::getTravelAcceleration_mm_s2());
+  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::MaxFeedRateX(DGUS_VP& vp) {
+  const int16_t data = dgus_display.ToFixedPoint<feedRate_t, int16_t, 0>(ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::axis_t::X));
+  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::MaxFeedRateY(DGUS_VP& vp) {
+  const int16_t data = dgus_display.ToFixedPoint<feedRate_t, int16_t, 0>(ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::axis_t::Y));
+  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::MaxFeedRateZ(DGUS_VP& vp) {
+  const int16_t data = dgus_display.ToFixedPoint<feedRate_t, int16_t, 0>(ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::axis_t::Z));
+  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::MaxFeedRateE(DGUS_VP& vp) {
+  const int16_t data = dgus_display.ToFixedPoint<feedRate_t, int16_t, 0>(ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::extruder_t::E0));
+  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::MinPrintFeedRate(DGUS_VP& vp) {
+  const int16_t data = dgus_display.ToFixedPoint<feedRate_t, int16_t, 1>(ExtUI::getMinFeedrate_mm_s());
+  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::MinTravelFeedRate(DGUS_VP& vp) {
+  const int16_t data = dgus_display.ToFixedPoint<feedRate_t, int16_t, 1>(ExtUI::getMinTravelFeedrate_mm_s());
+  dgus_display.Write((uint16_t)vp.addr, Swap16(data));
 }
 
 void DGUSTxHandler::ExtraToString(DGUS_VP &vp) {

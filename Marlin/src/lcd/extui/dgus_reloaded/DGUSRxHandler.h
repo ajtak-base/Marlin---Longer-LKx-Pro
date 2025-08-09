@@ -37,6 +37,7 @@ namespace DGUSRxHandler {
   void PrintAbort(DGUS_VP &, void *);
   void PrintPause(DGUS_VP &, void *);
   void PrintResume(DGUS_VP &, void *);
+  void PrintPauseResume(DGUS_VP &, void *);
 
   void Feedrate(DGUS_VP &, void *);
   void Flowrate(DGUS_VP &, void *);
@@ -48,19 +49,22 @@ namespace DGUSRxHandler {
   void TempCool(DGUS_VP &, void *);
 
   void Steppers(DGUS_VP &, void *);
+  void RunoutControl(DGUS_VP &, void *);
+#if HAS_LEVELING
+    void ZOffset(DGUS_VP &, void *);
+    void ZOffsetStep(DGUS_VP &, void *);
+    void ZOffsetSetStep(DGUS_VP &, void *);
+#endif
+    void MoveToPoint(DGUS_VP &, void *);
 
-  void ZOffset(DGUS_VP &, void *);
-  void ZOffsetStep(DGUS_VP &, void *);
-  void ZOffsetSetStep(DGUS_VP &, void *);
-
-  void MoveToPoint(DGUS_VP &, void *);
-
-  void Probe(DGUS_VP &, void *);
-  void DisableABL(DGUS_VP &, void *);
+#if HAS_LEVELING
+    void Probe(DGUS_VP &, void *);
+#endif
 
   void FilamentSelect(DGUS_VP &, void *);
   void FilamentLength(DGUS_VP &, void *);
   void FilamentMove(DGUS_VP &, void *);
+  void FilamentLoadUnload(DGUS_VP &vp, void *data_ptr);
 
   void Home(DGUS_VP &, void *);
   void Move(DGUS_VP &, void *);
@@ -70,7 +74,7 @@ namespace DGUSRxHandler {
   void GcodeClear(DGUS_VP &, void *);
   void GcodeExecute(DGUS_VP &, void *);
 
-  void ResetEEPROM(DGUS_VP &, void *);
+  void EEPROMControl(DGUS_VP &, void *);
 
   void SettingsExtra(DGUS_VP &, void *);
 
@@ -91,6 +95,30 @@ namespace DGUSRxHandler {
   void Volume(DGUS_VP &, void *);
 
   void Brightness(DGUS_VP &, void *);
+
+  void StepsPerMmX(DGUS_VP &, void *);
+  void StepsPerMmY(DGUS_VP &, void *);
+  void StepsPerMmZ(DGUS_VP &, void *);
+  void StepsPerMmE(DGUS_VP &, void *);
+  void JerkStepsMmX(DGUS_VP &, void *);
+  void JerkStepsMmY(DGUS_VP &, void *);
+  void JerkStepsMmZ(DGUS_VP &, void *);
+  void JerkStepsMmE(DGUS_VP &, void *);
+  void JunctionDeviation(DGUS_VP &, void *);
+  void LinearAdvance(DGUS_VP &, void *);
+  void AccelerationX(DGUS_VP &, void *);
+  void AccelerationY(DGUS_VP &, void *);
+  void AccelerationZ(DGUS_VP &, void *);
+  void AccelerationE(DGUS_VP &, void *);
+  void AccelerationPrint(DGUS_VP &, void *);
+  void AccelerationRetract(DGUS_VP &, void *);
+  void AccelerationTravel(DGUS_VP &, void *);
+  void MaxFeedRateX(DGUS_VP &, void *);
+  void MaxFeedRateY(DGUS_VP &, void *);
+  void MaxFeedRateZ(DGUS_VP &, void *);
+  void MaxFeedRateE(DGUS_VP &, void *);
+  void MinPrintFeedRate(DGUS_VP &, void *);
+  void MinTravelFeedRate(DGUS_VP &, void *);
 
   void Debug(DGUS_VP &, void *);
 

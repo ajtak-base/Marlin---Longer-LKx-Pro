@@ -1621,13 +1621,19 @@ void MarlinUI::init() {
 
   void MarlinUI::abort_print() {
     #if ENABLED(SDSUPPORT)
-      wait_for_heatup = wait_for_user = false;
-      card.abortFilePrintSoon();
-    #endif
+    wait_for_heatup = wait_for_user = false;
+    //GUIZZ
+    card.flag.abort_sd_printing = true;
+    // GUIZZ
+    //card.abortFilePrintSoon();
+  #endif
     #ifdef ACTION_ON_CANCEL
       hostui.cancel();
     #endif
-    IF_DISABLED(SDSUPPORT, print_job_timer.stop());
+      // GUIZZ
+    //IF_DISABLED(SDSUPPORT, print_job_timer.stop());
+    // GUIZZ
+    print_job_timer.abort();
     TERN_(HOST_PROMPT_SUPPORT, hostui.prompt_open(PROMPT_INFO, F("UI Aborted"), FPSTR(DISMISS_STR)));
     LCD_MESSAGE(MSG_PRINT_ABORTED);
     TERN_(HAS_MARLINUI_MENU, return_to_status());
@@ -1661,6 +1667,7 @@ void MarlinUI::init() {
 
     #if ENABLED(PARK_HEAD_ON_PAUSE)
       pause_show_message(PAUSE_MESSAGE_PARKING, PAUSE_MODE_PAUSE_PRINT); // Show message immediately to let user know about pause in progress
+      TERN_(EXTENSIBLE_UI, ExtUI::onPauseMessage(PAUSE_MESSAGE_PARKING, PAUSE_MODE_PAUSE_PRINT));
       queue.inject(F("M25 P\nM24"));
     #elif ENABLED(SDSUPPORT)
       queue.inject(F("M25"));

@@ -58,12 +58,18 @@ constexpr DGUS_Addr LIST_PRINT_STATUS[] PROGMEM = {
   DGUS_Addr::STATUS_PositionZ,
   DGUS_Addr::STATUS_Ellapsed,
   DGUS_Addr::STATUS_Percent,
-  DGUS_Addr::STATUS_Icons,
+  DGUS_Addr::SD_SelectedFileName,
+  DGUS_Addr::SP_STATUS_Filename,
+  DGUS_Addr::FAN0_Speed_CUR,
+  DGUS_Addr::STATUS_Feedrate_MMS,
+  DGUS_Addr::STATUS_Pause_Resume_Icon,
   (DGUS_Addr)0
 };
 
 constexpr DGUS_Addr LIST_PRINT_ADJUST[] PROGMEM = {
+  DGUS_Addr::TEMP_Current_H0,
   DGUS_Addr::TEMP_Target_H0,
+  DGUS_Addr::TEMP_Current_Bed,
   DGUS_Addr::TEMP_Target_Bed,
   DGUS_Addr::FAN0_Speed,
   DGUS_Addr::ADJUST_Feedrate,
@@ -107,7 +113,7 @@ constexpr DGUS_Addr LIST_FAN[] PROGMEM = {
 };
 
 constexpr DGUS_Addr LIST_SETTINGS_MENU[] PROGMEM = {
-  DGUS_Addr::STEPPER_Status,
+  // DGUS_Addr::STEPPER_Status,
   (DGUS_Addr)0
 };
 
@@ -130,14 +136,13 @@ constexpr DGUS_Addr LIST_LEVELING_AUTOMATIC[] PROGMEM = {
   DGUS_Addr::TEMP_Target_H0,
   DGUS_Addr::TEMP_Current_Bed,
   DGUS_Addr::TEMP_Target_Bed,
-  DGUS_Addr::LEVEL_AUTO_DisableIcon,
   DGUS_Addr::LEVEL_AUTO_Grid,
   (DGUS_Addr)0
 };
 
 constexpr DGUS_Addr LIST_LEVELING_PROBING[] PROGMEM = {
-  DGUS_Addr::LEVEL_PROBING_Icons1,
-  DGUS_Addr::LEVEL_PROBING_Icons2,
+  DGUS_Addr::SP_LEVEL_AUTO_Grid,
+  DGUS_Addr::LEVEL_AUTO_Grid,
   (DGUS_Addr)0
 };
 
@@ -153,6 +158,7 @@ constexpr DGUS_Addr LIST_MOVE[] PROGMEM = {
   DGUS_Addr::MOVE_CurrentX,
   DGUS_Addr::MOVE_CurrentY,
   DGUS_Addr::MOVE_CurrentZ,
+  DGUS_Addr::MOVE_CurrentE,
   DGUS_Addr::MOVE_StepIcons,
   (DGUS_Addr)0
 };
@@ -163,7 +169,7 @@ constexpr DGUS_Addr LIST_GCODE[] PROGMEM = {
 };
 
 constexpr DGUS_Addr LIST_SETTINGS_MENU2[] PROGMEM = {
-  DGUS_Addr::SETTINGS2_BLTouch,
+  //DGUS_Addr::SETTINGS2_BLTouch,
   (DGUS_Addr)0
 };
 
@@ -187,10 +193,25 @@ constexpr DGUS_Addr LIST_BRIGHTNESS[] PROGMEM = {
   (DGUS_Addr)0
 };
 
+constexpr DGUS_Addr LIST_SCREEN_SETTINGS[] PROGMEM = {
+    DGUS_Addr::BRIGHTNESS_Level,
+    DGUS_Addr::VOLUME_Level,
+    (DGUS_Addr)0
+};
+
 constexpr DGUS_Addr LIST_INFOS[] PROGMEM = {
   DGUS_Addr::INFOS_Machine,
   DGUS_Addr::INFOS_BuildVolume,
   DGUS_Addr::INFOS_Version,
+  (DGUS_Addr)0
+};
+
+constexpr DGUS_Addr BOOT_INFOS[] PROGMEM = {
+  DGUS_Addr::INFOS_Version,
+  (DGUS_Addr)0
+};
+
+constexpr DGUS_Addr LIST_STATS[] PROGMEM = {
   DGUS_Addr::INFOS_TotalPrints,
   DGUS_Addr::INFOS_FinishedPrints,
   DGUS_Addr::INFOS_PrintTime,
@@ -204,11 +225,47 @@ constexpr DGUS_Addr LIST_WAIT[] PROGMEM = {
   (DGUS_Addr)0
 };
 
+constexpr DGUS_Addr LIST_ADVANCED_SETTINGS_1[] PROGMEM = {
+    DGUS_Addr::X_Steps_mm,
+    DGUS_Addr::Y_Steps_mm,
+    DGUS_Addr::Z_Steps_mm,
+    DGUS_Addr::E_Steps_mm,
+    DGUS_Addr::X_Jerk_Steps_mm,
+    DGUS_Addr::Y_Jerk_Steps_mm,
+    DGUS_Addr::Z_Jerk_Steps_mm,
+    DGUS_Addr::E_Jerk_Steps_mm,
+    DGUS_Addr::JunctionDeviation,
+    DGUS_Addr::Linear_Advance,
+    (DGUS_Addr)0
+};
+
+constexpr DGUS_Addr LIST_ADVANCED_SETTINGS_2[] PROGMEM = {
+    DGUS_Addr::X_Acceleration,
+    DGUS_Addr::Y_Acceleration,
+    DGUS_Addr::Z_Acceleration,
+    DGUS_Addr::E_Acceleration,
+    DGUS_Addr::Print_Acceleration,
+    DGUS_Addr::Retract_Acceleration,
+    DGUS_Addr::Travel_Acceleration,
+    (DGUS_Addr)0
+};
+
+constexpr DGUS_Addr LIST_ADVANCED_SETTINGS_3[] PROGMEM = {
+    DGUS_Addr::X_Max_Speed,
+    DGUS_Addr::Y_Max_Speed,
+    DGUS_Addr::Z_Max_Speed,
+    DGUS_Addr::E_Max_Speed,
+    DGUS_Addr::Min_Speed,
+    DGUS_Addr::Min_Travel_Speed,
+    (DGUS_Addr)0
+};
+
 #define MAP_HELPER(SCREEN, LIST) \
   { .screen = SCREEN, \
   .addr_list = LIST }
 
 const struct DGUS_ScreenAddrList screen_addr_list_map[] PROGMEM = {
+  MAP_HELPER(DGUS_Screen::BOOT,                 BOOT_INFOS),
   MAP_HELPER(DGUS_Screen::HOME,                 LIST_HOME),
   #if ENABLED(SDSUPPORT)
     MAP_HELPER(DGUS_Screen::PRINT,              LIST_PRINT),
@@ -232,6 +289,11 @@ const struct DGUS_ScreenAddrList screen_addr_list_map[] PROGMEM = {
   MAP_HELPER(DGUS_Screen::VOLUME,               LIST_VOLUME),
   MAP_HELPER(DGUS_Screen::BRIGHTNESS,           LIST_BRIGHTNESS),
   MAP_HELPER(DGUS_Screen::INFOS,                LIST_INFOS),
+  MAP_HELPER(DGUS_Screen::STATS,                LIST_STATS),
+  MAP_HELPER(DGUS_Screen::SCREEN_SETTINGS,      LIST_SCREEN_SETTINGS),
+  MAP_HELPER(DGUS_Screen::ADVANCED_SETTINGS_1,  LIST_ADVANCED_SETTINGS_1),
+  MAP_HELPER(DGUS_Screen::ADVANCED_SETTINGS_2,  LIST_ADVANCED_SETTINGS_2),
+  MAP_HELPER(DGUS_Screen::ADVANCED_SETTINGS_3,  LIST_ADVANCED_SETTINGS_3),
   MAP_HELPER(DGUS_Screen::WAIT,                 LIST_WAIT),
 
   MAP_HELPER((DGUS_Screen)0, nullptr)

@@ -115,6 +115,7 @@ namespace ExtUI {
   #if HAS_MESH
     void onLevelingStart() {}
     void onLevelingDone() {}
+    void onMeshLevelingStart(){}
 
     void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval) {
       // Called when any mesh points are updated
@@ -156,6 +157,7 @@ namespace ExtUI {
     }
   #endif
 
+  void onPauseMessage(PauseMessage message, PauseMode mode){}
   void onSteppersDisabled() {}
   void onSteppersEnabled()  {}
 }

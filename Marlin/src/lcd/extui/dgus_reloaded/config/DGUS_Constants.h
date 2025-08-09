@@ -25,10 +25,12 @@
 
 #include "DGUS_Addr.h"
 
-static_assert((DGUS_LEVEL_GRID_SIZE == GRID_MAX_POINTS_X * GRID_MAX_POINTS_Y), "DGUS_LEVEL_GRID_SIZE incompatible with current mesh.");
+#if EITHER(AUTO_BED_LEVELING_LINEAR, AUTO_BED_LEVELING_BILINEAR)
+  static_assert((DGUS_LEVEL_GRID_SIZE == GRID_MAX_POINTS_X * GRID_MAX_POINTS_Y), "DGUS_LEVEL_GRID_SIZE incompatible with current mesh.");
+#endif
 
 #ifndef DGUS_DEFAULT_VOLUME
-  #define DGUS_DEFAULT_VOLUME 50
+  #define DGUS_DEFAULT_VOLUME 100
 #endif
 
 #ifndef DGUS_DEFAULT_BRIGHTNESS

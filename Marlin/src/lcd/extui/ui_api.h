@@ -43,6 +43,7 @@
  ****************************************************************************/
 
 #include "../../inc/MarlinConfig.h"
+#include "../../feature/pause.h"
 #include "../marlinui.h"
 #include "../../gcode/gcode.h"
 #if M600_PURGE_MORE_RESUMABLE
@@ -339,6 +340,7 @@ namespace ExtUI {
     void startBedPIDTune(const celsius_t);
   #endif
 
+
   /**
    * Delay and timing routines
    * Should be used by the EXTENSIBLE_UI to safely pause or measure time
@@ -428,7 +430,11 @@ namespace ExtUI {
   #if HAS_PID_HEATING
     void onPidTuning(const result_t rst);
   #endif
+
+  // Pause message - equivalent of lcd_pause_show_message()
+  void onPauseMessage(PauseMessage message, PauseMode mode);
 };
+
 
 /**
  * Helper macros to increment or decrement a value. For example:

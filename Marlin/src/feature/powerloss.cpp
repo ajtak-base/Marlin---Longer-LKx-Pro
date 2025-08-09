@@ -127,7 +127,11 @@ bool PrintJobRecovery::check() {
  */
 void PrintJobRecovery::purge() {
   init();
+  #if ENABLED(LGT_MAC)
+    write(); 
+  #else
   card.removeJobRecoveryFile();
+  #endif
 }
 
 /**

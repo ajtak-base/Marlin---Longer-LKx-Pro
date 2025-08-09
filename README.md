@@ -1,4 +1,35 @@
-<p align="center"><img src="buildroot/share/pixmaps/logo/marlin-outrun-nf-500.png" height="250" alt="MarlinFirmware's logo" /></p>
+# Marlin 2.1 Printer Firmware For Longer LK4/LK5 Pro and Alfawise U30 Pro.
+
+**IMPORTANT!!** This firmware will not work on touch screens other than model DW. In the About, the screen firmware version may have letters following it like "0.3.1-DW". This firmware will only work if your screen has the letters DW or no letters following the version number.
+
+**Do not try to update if your touch screen model is "T5L", "DWTJ" or "DWTJB".** 
+
+Here are brief installation instructions:
+1. Download the appropriate Marlin hex file for your system configuration as well as the DWIN_SET from the release page.
+2. Download and install the Longer slicer from Longer's official web site.
+3. Connect a USB cable from your computer to the printer.
+4. Open the Longer slicer and select Machine / Machine Settings.
+5. Open the Serial Port selection and select the serial port for the printer. If there is no port available under the selection, then you must troubleshoot your USB connection before proceeding.
+6. If a port was selected, set the Baud Rate to Auto. Note that the baud rate may change after installation. You will need to account for this in any control software you are using. The new baud rate is 115200.
+7. Select the OK button to save the settings.
+8. On Longer Slicer, select Machine / Install Custom Firmware.
+9. Locate the new firmware .hex file. The firmware should update. If it does not update, do not proceed.
+10. Now use a Micro SD card between 4 GB and 16 GB and format it for FAT32 with a cluster size (allocation size) of 4096 bytes. Otherwise, the display will not recognize the SD card. 
+11. Extract the DWIN_SET folder from the .zip file and copy it to the formatted SD card.
+12. Open the frame around the display screen and place the SD card into the SD slot for the screen.
+13. Disconnect the USB cable from the computer before proceeding.
+14. Power on the printer and the screen software should update. It takes about 1 minute. When complete, the first displayed line will say "SD Card Process... END !".
+15. Remove the SD card and cycle the power on the printer. The printer should come up.
+
+**Notes:** 
+
+If you are running Windows Home Edition, it will not have a Utilization of 4096 KB availabile. In this case open a Command Prompt on the PC and enter the following command. FORMAT D: /FS:FAT32 /Q /A:4096 where D: is the drive letter assigned to your SD card. This format must be used to update the screen software.
+
+The new screens will not work with the old software. You MUST either have the new firmware and new screens or the old firmware and old screens. Load the Firmware first. Then the screen software. Steps 4 thru 9 can be done using the Prusa slicer, Cura, Octoprint, Repetier Server, Arduino, Avrdude, or any other firmware updater for Arduino. Follow instructions. In step 10, the SD card MUST be formatted as FAT32 with a Utilization of 4096 KB. The screen will not update unless this format is used. Warning! Loading this new firmware will reset your print counts.
+
+The default probe offset is set to an X offset of -32. This is correct if you have a single blower. If your unit has a dual blower, go to the Gcode entry screen and enter the commands M851 X-50 to set the X probe offset and M500 to save the settings.
+
+If you have already loaded the display software and you are only updating the firmware, you can skip lines 10 thru 15.
 
 <h1 align="center">Marlin 3D Printer Firmware</h1>
 
@@ -15,48 +46,39 @@
 Additional documentation can be found at the [Marlin Home Page](https://marlinfw.org/).
 Please test this firmware and let us know if it misbehaves in any way. Volunteers are standing by!
 
-## Marlin 2.1
+## Modifications
 
-Marlin 2.1 continues to support both 32-bit ARM and 8-bit AVR boards while adding support for up to 9 coordinated axes and to up to 8 extruders.
+This is based on the work from DaGr70 https://github.com/DaGr70/Marlin_Longer_LK4_pro and Desuuuu https://github.com/Desuuuu/Marlin.
 
-Download earlier versions of Marlin on the [Releases page](https://github.com/MarlinFirmware/Marlin/releases).
+I wanted more features and a more consistent look on the touchscreen. I made these modifications but more features will be added over time.
+- Added advanced settings to allow changing Steps/mm, Acceleration and more from the touchscreen.
+- Reworked some screens layout and navigation.
+- Enabled the M600 command by default.
+- Enabled power loss recovery by default.
+- Works with non-BLtouch printers
 
-## Example Configurations
+You can see some screenshots here https://github.com/Guizz27/DWIN_LK4Pro/tree/main/Screenshots.
 
-Before building Marlin you'll need to configure it for your specific hardware. Your vendor should have already provided source code with configurations for the installed firmware, but if you ever decide to upgrade you'll need updated configuration files. Marlin users have contributed dozens of tested example configurations to get you started. Visit the [MarlinFirmware/Configurations](https://github.com/MarlinFirmware/Configurations) repository to find the right configuration for your hardware.
+Integrated all changes from https://github.com/Desuuuu/Marlin and https://github.com/MarlinFirmware/Marlin to stay up to date with Marlin and the Reloaded screens updates.
+
+Releases will contain the touchscreen firmware that matches. If you want the source of the screen firmware you can find it here https://github.com/Guizz27/DWIN_LK4Pro.
 
 ## Building Marlin 2.1
 
-To build Marlin 2.1 you'll need [Arduino IDE 1.8.8 or newer](https://www.arduino.cc/en/main/software) or [PlatformIO](http://docs.platformio.org/en/latest/ide.html#platformio-ide). Detailed build and install instructions are posted at:
+To build Marlin 2.1 you'll need [Arduino IDE 1.8.8 or newer](https://www.arduino.cc/en/main/software) or [PlatformIO](http://docs.platformio.org/en/latest/ide.html#platformio-ide).
 
-  - [Installing Marlin (Arduino)](http://marlinfw.org/docs/basics/install_arduino.html)
-  - [Installing Marlin (VSCode)](http://marlinfw.org/docs/basics/install_platformio_vscode.html).
+## Building and installing Marlin 2.1 for LKx Pro
+Baddflash wrote detailed instructions to build and install the printer firmware as well as the screen firmware which you also have to update. Instructions are for an older version, so you will need to adapt to this new 2.1 version.
+Please follow his instructions here: https://github.com/Baddflash/LK4-Pro-Firmware-Tutorial
 
 ### Supported Platforms
-
+  
   Platform|MCU|Example Boards
   --------|---|-------
   [Arduino AVR](https://www.arduino.cc/)|ATmega|RAMPS, Melzi, RAMBo
-  [Teensy++ 2.0](https://www.microchip.com/en-us/product/AT90USB1286)|AT90USB1286|Printrboard
-  [Arduino Due](https://www.arduino.cc/en/Guide/ArduinoDue)|SAM3X8E|RAMPS-FD, RADDS, RAMPS4DUE
-  [ESP32](https://github.com/espressif/arduino-esp32)|ESP32|FYSETC E4, E4d@BOX, MRR
-  [LPC1768](https://www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/lpc1700-cortex-m3/512-kb-flash-64-kb-sram-ethernet-usb-lqfp100-package:LPC1768FBD100)|ARM® Cortex-M3|MKS SBASE, Re-ARM, Selena Compact
-  [LPC1769](https://www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/lpc1700-cortex-m3/512-kb-flash-64-kb-sram-ethernet-usb-lqfp100-package:LPC1769FBD100)|ARM® Cortex-M3|Smoothieboard, Azteeg X5 mini, TH3D EZBoard
-  [STM32F103](https://www.st.com/en/microcontrollers-microprocessors/stm32f103.html)|ARM® Cortex-M3|Malyan M200, GTM32 Pro, MKS Robin, BTT SKR Mini
-  [STM32F401](https://www.st.com/en/microcontrollers-microprocessors/stm32f401.html)|ARM® Cortex-M4|ARMED, Rumba32, SKR Pro, Lerdge, FYSETC S6, Artillery Ruby
-  [STM32F7x6](https://www.st.com/en/microcontrollers-microprocessors/stm32f7x6.html)|ARM® Cortex-M7|The Borg, RemRam V1
-  [SAMD51P20A](https://www.adafruit.com/product/4064)|ARM® Cortex-M4|Adafruit Grand Central M4
-  [Teensy 3.5](https://www.pjrc.com/store/teensy35.html)|ARM® Cortex-M4|
-  [Teensy 3.6](https://www.pjrc.com/store/teensy36.html)|ARM® Cortex-M4|
-  [Teensy 4.0](https://www.pjrc.com/store/teensy40.html)|ARM® Cortex-M7|
-  [Teensy 4.1](https://www.pjrc.com/store/teensy41.html)|ARM® Cortex-M7|
-  Linux Native|x86/ARM/etc.|Raspberry Pi
 
-## Submitting Patches
-
-- Submit **Bug Fixes** as Pull Requests to the ([bugfix-2.1.x](https://github.com/MarlinFirmware/Marlin/tree/bugfix-2.1.x)) branch.
-- Follow the [Coding Standards](http://marlinfw.org/docs/development/coding_standards.html) to gain points with the maintainers.
-- Please submit your questions and concerns to the [Issue Queue](https://github.com/MarlinFirmware/Marlin/issues).
+  Although this is based on the official Marlin software. The configuration files are specific to Longer/Alfawise "Pro" printers.
+  It may or may not build for other platforms.
 
 ## Marlin Support
 
@@ -93,3 +115,6 @@ Regular users can open and close their own issues, but only the administrators c
 Marlin is published under the [GPL license](/LICENSE) because we believe in open development. The GPL comes with both rights and obligations. Whether you use Marlin firmware as the driver for your open or closed-source product, you must keep Marlin open, and you must provide your compatible Marlin source code to end users upon request. The most straightforward way to comply with the Marlin license is to make a fork of Marlin on Github, perform your modifications, and direct users to your modified fork.
 
 While we can't prevent the use of this code in products (3D printers, CNC, etc.) that are closed source or crippled by a patent, we would prefer that you choose another firmware or, better yet, make your own.
+
+## Disclaimer
+Please note that you use this software at your own risks. I am not responsible for any damage it may cause.

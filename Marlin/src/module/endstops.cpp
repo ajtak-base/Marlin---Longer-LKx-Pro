@@ -1631,14 +1631,10 @@ void Endstops::update() {
    */
   void Endstops::set_homing_current(const bool onoff) {
     #define HAS_CURRENT_HOME(N) (defined(N##_CURRENT_HOME) && N##_CURRENT_HOME != N##_CURRENT)
-    #define HAS_DELTA_X_CURRENT (ENABLED(DELTA) && HAS_CURRENT_HOME(X))
-    #define HAS_DELTA_Y_CURRENT (ENABLED(DELTA) && HAS_CURRENT_HOME(Y))
-    #if HAS_DELTA_X_CURRENT || HAS_DELTA_Y_CURRENT || HAS_CURRENT_HOME(Z)
-      #if HAS_DELTA_X_CURRENT
-        static int16_t saved_current_x;
-      #endif
-      #if HAS_DELTA_Y_CURRENT
-        static int16_t saved_current_y;
+    #define _HOME_ELEM(N) HAS_CURRENT_HOME(N) ||
+    #if MAIN_AXIS_MAP(_HOME_ELEM) 0
+      #if ENABLED(DELTA)
+        static int16_t saved_current_X, saved_current_Y;
       #endif
       #if HAS_CURRENT_HOME(Z)
         static int16_t saved_current_z;

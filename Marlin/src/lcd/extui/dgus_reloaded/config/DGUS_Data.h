@@ -73,9 +73,18 @@ namespace DGUS_Data {
     MMP01 = 3  // 0.01mm
   };
 
+  enum class EepromAction : uint8_t {
+    // EEPROM
+    RESET = 1,
+    SAVE = 2,
+    LOAD = 3
+  };
+
   enum class FilamentMove : uint8_t {
     RETRACT = 0,
-    EXTRUDE = 1
+    EXTRUDE = 1,
+    UNLOAD = 2,
+    LOAD = 3
   };
 
   enum class Axis : uint8_t {
@@ -113,8 +122,8 @@ namespace DGUS_Data {
   };
 
   enum class StatusIcon : uint16_t {
-    PAUSE  = 1U << 0,
-    RESUME = 1U << 1
+    PAUSE = 2,
+    RESUME = 1
   };
 
   enum class Status : uint16_t {
